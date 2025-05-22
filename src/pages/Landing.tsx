@@ -1,12 +1,11 @@
 
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
+import MainLayout from '../components/Layout/MainLayout';
 import Hero from '../components/Landing/Hero';
 import Features from '../components/Landing/Features';
 import LoginForm from '../components/Auth/LoginForm';
 import SignupForm from '../components/Auth/SignupForm';
 import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../integrations/supabase/client';
 
 const Landing = () => {
   const [showAuth, setShowAuth] = useState(false);
@@ -29,9 +28,7 @@ const Landing = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <Navbar onShowAuth={handleShowAuth} />
-      
+    <MainLayout onShowAuth={handleShowAuth}>
       {showAuth ? (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-secondary/20">
           {authMode === 'login' ? (
@@ -41,12 +38,12 @@ const Landing = () => {
           )}
         </div>
       ) : (
-        <>
+        <div className="w-full">
           <Hero onShowAuth={handleShowAuth} />
           <Features />
-        </>
+        </div>
       )}
-    </div>
+    </MainLayout>
   );
 };
 

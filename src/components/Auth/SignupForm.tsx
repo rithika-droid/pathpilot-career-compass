@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
@@ -10,38 +11,48 @@ interface SignupFormProps {
   onToggleMode: () => void;
 }
 
-const SignupForm = ({ onToggleMode }: SignupFormProps) => {
+const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
   const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signup } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password !== confirmPassword) {
+    if (!email || !password || !username) {
       toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
+        title: "Error",
+        description: "Please fill in all fields",
         variant: "destructive",
       });
       return;
     }
-
+    
+    if (password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password should be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
       await signup(email, password, username);
       toast({
         title: "Account created!",
-        description: "Welcome to PathPilot! Let's set up your profile.",
+        description: "You've successfully signed up.",
       });
     } catch (error) {
+      console.error("Signup error:", error);
       toast({
         title: "Signup failed",
-        description: "Something went wrong. Please try again.",
+        description: "An error occurred during signup. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -49,71 +60,91 @@ const SignupForm = ({ onToggleMode }: SignupFormProps) => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <Card className="w-full max-w-md bg-card/50 backdrop-blur-lg border-border/50">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Start Your Journey</CardTitle>
-        <CardDescription>Create your PathPilot account</CardDescription>
+    <Card className="w-full max-w-md mx-auto bg-card/50 backdrop-blur-lg border-border/50 animate-fade-in">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Join PathPilot</CardTitle>
+        <CardDescription>
+          Create an account to start your career journey
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-2">
+            <label htmlFor="username" className="text-sm font-medium">Username</label>
             <Input
+              id="username"
               type="text"
-              placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              placeholder="johndoe"
               required
-              className="h-12"
             />
           </div>
-          <div>
+          
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium">Email</label>
             <Input
+              id="email"
               type="email"
-              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="your.email@example.com"
               required
-              className="h-12"
             />
           </div>
-          <div>
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="h-12"
-            />
+          
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium">Password</label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={togglePasswordVisibility}
+                className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
+              >
+                {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">Must be at least 6 characters long</p>
           </div>
-          <div>
-            <Input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="h-12"
-            />
-          </div>
-          <Button type="submit" className="w-full h-12" disabled={isLoading}>
-            {isLoading ? 'Creating account...' : 'Create Account'}
+          
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating account..." : "Sign up"}
           </Button>
         </form>
-        <div className="mt-6 text-center">
+      </CardContent>
+      <CardFooter>
+        <div className="text-center w-full">
           <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <button
-              type="button"
+            Already have an account?{" "}
+            <button 
+              type="button" 
               onClick={onToggleMode}
               className="text-primary hover:underline font-medium"
             >
-              Sign in
+              Log in
             </button>
           </p>
         </div>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 };

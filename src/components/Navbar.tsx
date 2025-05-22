@@ -2,14 +2,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from './ThemeProvider';
-import { Moon, Sun, Search, Bell, User } from 'lucide-react';
+import { Moon, Sun, Search, Bell, User, Menu } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 interface NavbarProps {
   onShowAuth?: (show: boolean, mode: 'login' | 'signup') => void;
+  toggleSidebar?: () => void;
 }
 
-const Navbar = ({ onShowAuth }: NavbarProps) => {
+const Navbar = ({ onShowAuth, toggleSidebar }: NavbarProps) => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
 
@@ -17,18 +18,29 @@ const Navbar = ({ onShowAuth }: NavbarProps) => {
     <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-4">
+          {user && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleSidebar} 
+              className="md:hidden h-9 w-9"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          )}
+          
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             PathPilot
           </h1>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <div className="hidden md:flex items-center space-x-2 bg-secondary/50 rounded-full px-4 py-2">
             <Search className="h-4 w-4 text-muted-foreground" />
             <input 
               type="text" 
               placeholder="Search careers..." 
-              className="bg-transparent border-none outline-none text-sm"
+              className="bg-transparent border-none outline-none text-sm w-28 sm:w-auto"
             />
           </div>
 
@@ -49,7 +61,7 @@ const Navbar = ({ onShowAuth }: NavbarProps) => {
               <Button variant="ghost" size="icon" className="h-9 w-9">
                 <User className="h-4 w-4" />
               </Button>
-              <Button variant="outline" onClick={logout}>
+              <Button variant="outline" onClick={logout} className="hidden sm:flex">
                 Logout
               </Button>
             </>
@@ -58,7 +70,7 @@ const Navbar = ({ onShowAuth }: NavbarProps) => {
               <Button variant="outline" onClick={() => onShowAuth && onShowAuth(true, 'login')}>
                 Login
               </Button>
-              <Button onClick={() => onShowAuth && onShowAuth(true, 'signup')}>
+              <Button onClick={() => onShowAuth && onShowAuth(true, 'signup')} className="hidden sm:flex">
                 Sign Up
               </Button>
             </div>

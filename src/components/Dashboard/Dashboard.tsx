@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '../../hooks/useAuth';
 import { BookOpen, Trophy, Calendar, Play, Target, Star } from 'lucide-react';
 import { getCareerRoadmap } from '../../utils/careerAlgorithm';
+import MainLayout from '../Layout/MainLayout';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -24,8 +25,8 @@ const Dashboard = () => {
   const progressPercentage = (currentLevel / 5) * 100;
 
   return (
-    <div className="min-h-screen pt-20 p-6 bg-gradient-to-br from-background via-background to-secondary/20">
-      <div className="container mx-auto max-w-7xl">
+    <MainLayout>
+      <div className="container mx-auto px-4 pt-20 pb-10">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">
@@ -37,7 +38,7 @@ const Dashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/20 border-blue-500/20">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -205,7 +206,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

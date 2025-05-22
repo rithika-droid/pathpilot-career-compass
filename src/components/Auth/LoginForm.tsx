@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
@@ -10,23 +11,35 @@ interface LoginFormProps {
   onToggleMode: () => void;
 }
 
-const LoginForm = ({ onToggleMode }: LoginFormProps) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
       await login(email, password);
       toast({
-        title: "Welcome back!",
-        description: "You've been successfully logged in.",
+        title: "Success!",
+        description: "You've successfully logged in.",
       });
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
         description: "Please check your credentials and try again.",
@@ -37,43 +50,76 @@ const LoginForm = ({ onToggleMode }: LoginFormProps) => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <Card className="w-full max-w-md bg-card/50 backdrop-blur-lg border-border/50">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-        <CardDescription>Sign in to continue your journey</CardDescription>
+    <Card className="w-full max-w-md mx-auto bg-card/50 backdrop-blur-lg border-border/50 animate-fade-in">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Welcome Back</CardTitle>
+        <CardDescription>
+          Log in to continue your career journey
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium">Email</label>
             <Input
+              id="email"
               type="email"
-              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="your.email@example.com"
               required
-              className="h-12"
             />
           </div>
-          <div>
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="h-12"
-            />
+          
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium">Password</label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={togglePasswordVisibility}
+                className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
+              >
+                {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
-          <Button type="submit" className="w-full h-12" disabled={isLoading}>
-            {isLoading ? 'Signing in...' : 'Sign In'}
+          
+          <div className="text-right">
+            <a href="#" className="text-sm text-primary hover:underline">
+              Forgot password?
+            </a>
+          </div>
+          
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Logging in..." : "Log in"}
           </Button>
         </form>
-        <div className="mt-6 text-center">
+      </CardContent>
+      <CardFooter>
+        <div className="text-center w-full">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{' '}
-            <button
-              type="button"
+            Don't have an account?{" "}
+            <button 
+              type="button" 
               onClick={onToggleMode}
               className="text-primary hover:underline font-medium"
             >
@@ -81,7 +127,7 @@ const LoginForm = ({ onToggleMode }: LoginFormProps) => {
             </button>
           </p>
         </div>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 };
