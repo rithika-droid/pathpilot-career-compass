@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Brain, Route, Trophy, MessageCircle, BookOpen, Certificate } from 'lucide-react';
+import { Brain, Route, Trophy, MessageCircle, BookOpen, Award } from 'lucide-react';
 
 const Features = () => {
   const features = [
@@ -36,7 +36,7 @@ const Features = () => {
       color: 'from-indigo-500 to-blue-500'
     },
     {
-      icon: Certificate,
+      icon: Award,
       title: 'Digital Certificates',
       description: 'Earn verified certificates as you complete each level of your learning journey.',
       color: 'from-teal-500 to-green-500'
