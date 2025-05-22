@@ -5,7 +5,11 @@ import { useTheme } from './ThemeProvider';
 import { Moon, Sun, Search, Bell, User } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
-const Navbar = () => {
+interface NavbarProps {
+  onShowAuth?: (show: boolean, mode: 'login' | 'signup') => void;
+}
+
+const Navbar = ({ onShowAuth }: NavbarProps) => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
 
@@ -51,8 +55,12 @@ const Navbar = () => {
             </>
           ) : (
             <div className="flex space-x-2">
-              <Button variant="outline">Login</Button>
-              <Button>Sign Up</Button>
+              <Button variant="outline" onClick={() => onShowAuth && onShowAuth(true, 'login')}>
+                Login
+              </Button>
+              <Button onClick={() => onShowAuth && onShowAuth(true, 'signup')}>
+                Sign Up
+              </Button>
             </div>
           )}
         </div>

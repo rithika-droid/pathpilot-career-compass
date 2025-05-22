@@ -3,7 +3,11 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Rocket, Target, Users } from 'lucide-react';
 
-const Hero = () => {
+interface HeroProps {
+  onShowAuth?: (show: boolean, mode: 'login' | 'signup') => void;
+}
+
+const Hero = ({ onShowAuth }: HeroProps) => {
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background Elements */}
@@ -38,11 +42,20 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button size="lg" className="text-lg px-8 py-6 h-auto group">
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-6 h-auto group"
+              onClick={() => onShowAuth && onShowAuth(true, 'signup')}
+            >
               Start Your Journey
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6 h-auto">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8 py-6 h-auto"
+              onClick={() => onShowAuth && onShowAuth(true, 'login')}
+            >
               Explore Careers
             </Button>
           </div>
