@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { useAuth } from '../hooks/useAuth';
@@ -17,6 +16,7 @@ import {
 import { careerPaths } from '../data/careerPaths';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Progress } from '@/components/ui/progress';
+import { toast } from '@/components/ui/sonner';
 
 const CoursesPage = () => {
   const { user } = useAuth();
@@ -98,6 +98,18 @@ const CoursesPage = () => {
       course => course.name.toLowerCase().includes(term)
     );
   }
+
+  // Add function to mark course as completed
+  const markCourseCompleted = (courseId: string) => {
+    if (user && user.profile) {
+      // In a real application, this would be a backend call to update the user's profile
+      // For now, let's just simulate with a toast notification
+      toast.success("Course marked as completed!");
+      
+      // Here you would update the completedCourses array in the user profile
+      // This is a placeholder for the actual implementation
+    }
+  };
 
   return (
     <MainLayout>
@@ -221,7 +233,7 @@ const CoursesPage = () => {
                   </p>
                 </CardContent>
                 
-                <CardFooter className="pt-0">
+                <CardFooter className="pt-0 flex flex-col gap-2">
                   <a 
                     href={course.link} 
                     target="_blank" 
@@ -233,6 +245,17 @@ const CoursesPage = () => {
                       <ExternalLink className="h-4 w-4 ml-2" />
                     </Button>
                   </a>
+                  
+                  {!course.isCompleted && course.isCurrentLevel && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-green-500 text-green-500 hover:bg-green-500/10" 
+                      onClick={() => markCourseCompleted(course.name)}
+                    >
+                      Mark as Complete
+                      <CheckCircle className="h-4 w-4 ml-2" />
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             ))

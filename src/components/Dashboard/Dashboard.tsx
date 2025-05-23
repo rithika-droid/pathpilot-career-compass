@@ -36,10 +36,13 @@ const Dashboard = () => {
   const points = profile.points || 0;
   const badges = profile.badges || [];
 
-  const progressPercentage = (currentLevel / 5) * 100;
+  // Calculate progress based on completed courses
+  const totalCourses = Object.values(roadmap).reduce((sum, level) => sum + level.courses.length, 0);
+  const completedCourses = profile.completedCourses?.length || 0;
+  const progressPercentage = totalCourses > 0 ? (completedCourses / totalCourses) * 100 : 0;
   
   const handleContinueLearning = () => {
-    navigate('/courses', { state: { level: 1 } });
+    navigate('/courses', { state: { level: currentLevel } });
   };
 
   return (
