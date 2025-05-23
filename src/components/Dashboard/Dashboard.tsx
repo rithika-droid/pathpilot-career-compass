@@ -9,6 +9,16 @@ import { BookOpen, Trophy, Calendar, Play, Target, Star } from 'lucide-react';
 import { getCareerRoadmap } from '../../utils/careerAlgorithm';
 import MainLayout from '../Layout/MainLayout';
 
+interface RoadmapLevel {
+  title: string;
+  duration: string;
+  courses: string[];
+}
+
+interface Roadmap {
+  [key: string]: RoadmapLevel;
+}
+
 const Dashboard = () => {
   const { user } = useAuth();
   const profile = user?.profile;
@@ -17,7 +27,7 @@ const Dashboard = () => {
     return <div>Loading...</div>;
   }
 
-  const roadmap = getCareerRoadmap(profile.careerPath);
+  const roadmap = getCareerRoadmap(profile.careerPath) as Roadmap;
   const currentLevel = profile.level || 1;
   const points = profile.points || 0;
   const badges = profile.badges || [];

@@ -12,7 +12,7 @@ import CertificatesPage from "./pages/CertificatesPage";
 import RewardsPage from "./pages/RewardsPage";
 import SettingsPage from "./pages/SettingsPage";
 import HelpPage from "./pages/HelpPage";
-import { useAuth } from "./hooks/useAuth";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 import ProfileSetupForm from "./components/ProfileSetup/ProfileSetupForm";
 import Dashboard from "./components/Dashboard/Dashboard";
 
@@ -35,60 +35,62 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          
-          {/* Protected routes */}
-          <Route path="/profile-setup" element={
-            <ProtectedRoute>
-              <ProfileSetupForm />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/roadmap" element={
-            <ProtectedRoute>
-              <RoadmapPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/courses" element={
-            <ProtectedRoute>
-              <CoursesPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/certificates" element={
-            <ProtectedRoute>
-              <CertificatesPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/rewards" element={
-            <ProtectedRoute>
-              <RewardsPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <SettingsPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/help" element={
-            <ProtectedRoute>
-              <HelpPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            
+            {/* Protected routes */}
+            <Route path="/profile-setup" element={
+              <ProtectedRoute>
+                <ProfileSetupForm />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/roadmap" element={
+              <ProtectedRoute>
+                <RoadmapPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/courses" element={
+              <ProtectedRoute>
+                <CoursesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/certificates" element={
+              <ProtectedRoute>
+                <CertificatesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/rewards" element={
+              <ProtectedRoute>
+                <RewardsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/help" element={
+              <ProtectedRoute>
+                <HelpPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
