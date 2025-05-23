@@ -2,8 +2,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from './ThemeProvider';
-import { Moon, Sun, Search, Bell, User, Menu } from 'lucide-react';
+import { Moon, Sun, Search, Menu } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import Notifications from './Notifications/Notifications';
+import UserProfile from './UserProfile/UserProfile';
 
 interface NavbarProps {
   onShowAuth?: (show: boolean, mode: 'login' | 'signup') => void;
@@ -55,12 +57,8 @@ const Navbar = ({ onShowAuth, toggleSidebar }: NavbarProps) => {
 
           {user ? (
             <>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <Bell className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <User className="h-4 w-4" />
-              </Button>
+              <Notifications />
+              <UserProfile />
               <Button variant="outline" onClick={logout} className="hidden sm:flex">
                 Logout
               </Button>

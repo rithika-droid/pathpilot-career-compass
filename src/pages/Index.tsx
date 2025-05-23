@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 import Landing from './Landing';
-import Dashboard from '../components/Dashboard/Dashboard';
-import ProfileSetupForm from '../components/ProfileSetup/ProfileSetupForm';
 
 const Index = () => {
   const { user } = useAuth();
@@ -13,10 +12,10 @@ const Index = () => {
   }
 
   if (!user.profile?.careerPath) {
-    return <ProfileSetupForm />;
+    return <Navigate to="/profile-setup" replace />;
   }
 
-  return <Dashboard />;
+  return <Navigate to="/dashboard" replace />;
 };
 
 export default Index;

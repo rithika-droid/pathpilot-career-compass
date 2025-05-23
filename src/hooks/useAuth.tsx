@@ -6,6 +6,15 @@ interface User {
   email: string;
   username: string;
   profile?: UserProfile;
+  notifications?: Notification[];
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  date: string;
+  read: boolean;
 }
 
 interface UserProfile {
@@ -19,6 +28,7 @@ interface UserProfile {
   level?: number;
   points?: number;
   badges?: string[];
+  avatar?: string;
 }
 
 interface AuthContextType {
@@ -27,6 +37,7 @@ interface AuthContextType {
   signup: (email: string, password: string, username: string) => Promise<void>;
   logout: () => void;
   updateProfile: (profile: UserProfile) => void;
+  updateAvatar: (avatarUrl: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,25 +47,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Mock authentication for demo
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    const mockUser: User = {
-      id: '1',
-      email,
-      username: email.split('@')[0],
-    };
-    setUser(mockUser);
-    localStorage.setItem('pathpilot_user', JSON.stringify(mockUser));
+    try {
+      // Simulate API call
+      const mockUser: User = {
+        id: '1',
+        email,
+        username: email.split('@')[0],
+        notifications: [
+          {
+            id: '1',
+            title: 'Welcome to PathPilot',
+            message: 'Get started by completing your profile',
+            date: new Date().toISOString(),
+            read: false
+          }
+        ]
+      };
+      setUser(mockUser);
+      localStorage.setItem('pathpilot_user', JSON.stringify(mockUser));
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Login error:', error);
+      return Promise.reject('Invalid email or password');
+    }
   };
 
   const signup = async (email: string, password: string, username: string) => {
-    // Simulate API call
-    const mockUser: User = {
-      id: Date.now().toString(),
-      email,
-      username,
-    };
-    setUser(mockUser);
-    localStorage.setItem('pathpilot_user', JSON.stringify(mockUser));
+    try {
+      // Simulate API call
+      const mockUser: User = {
+        id: Date.now().toString(),
+        email,
+        username,
+        notifications: [
+          {
+            id: '1',
+            title: 'Welcome to PathPilot',
+            message: 'Get started by completing your profile',
+            date: new Date().toISOString(),
+            read: false
+          }
+        ]
+      };
+      setUser(mockUser);
+      localStorage.setItem('pathpilot_user', JSON.stringify(mockUser));
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Signup error:', error);
+      return Promise.reject('Could not create account');
+    }
   };
 
   const logout = () => {
@@ -70,10 +111,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateAvatar = (avatarUrl: string) => {
+    if (user && user.profile) {
+      const updatedProfile = { ...user.profile, avatar: avatarUrl };
+      const updatedUser = { ...user, profile: updatedProfile };
+      setUser(updatedUser);
+      localStorage.setItem('pathpilot_user', JSON.stringify(updatedUser));
+    }
+  };
+
   useEffect(() => {
     const savedUser = localStorage.getItem('pathpilot_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error('Error parsing user data from localStorage', e);
+        localStorage.removeItem('pathpilot_user');
+      }
     }
   }, []);
 
@@ -83,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signup,
     logout,
     updateProfile,
+    updateAvatar
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
