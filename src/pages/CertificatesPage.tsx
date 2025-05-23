@@ -1,138 +1,142 @@
 
 import React from 'react';
 import MainLayout from '../components/Layout/MainLayout';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Download, Calendar, Share2 } from 'lucide-react';
+import { Download, Award, Info, Calendar } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { careerPaths } from '../data/careerPaths';
+import { useNavigate } from 'react-router-dom';
 
 const CertificatesPage = () => {
-  const certificates = [
-    {
-      id: 1,
-      title: "Fundamentals of Programming",
-      issueDate: "April 15, 2025",
-      issuer: "PathPilot Academy",
-      credentialId: "PP-FP-2025-1234",
-      image: "/placeholder.svg"
-    },
-    {
-      id: 2,
-      title: "Data Structures and Algorithms - Level 1",
-      issueDate: "May 22, 2025",
-      issuer: "PathPilot Academy",
-      credentialId: "PP-DSA1-2025-5678",
-      image: "/placeholder.svg"
-    }
-  ];
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const profile = user?.profile;
   
-  const pendingCertificates = [
-    {
-      id: 3,
-      title: "Full-Stack Web Development",
-      progress: 75,
-      requirements: [
-        { name: "Complete all course modules", done: false },
-        { name: "Submit final project", done: false },
-        { name: "Pass certification exam", done: false }
-      ]
-    },
-    {
-      id: 4,
-      title: "Machine Learning Essentials",
-      progress: 45,
-      requirements: [
-        { name: "Complete all course modules", done: false },
-        { name: "Implement ML model", done: false },
-        { name: "Pass certification exam", done: false }
-      ]
-    }
-  ];
+  if (!profile?.careerPath) {
+    return (
+      <MainLayout>
+        <div className="container pt-20 px-4 flex flex-col items-center justify-center min-h-screen">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Complete Your Profile</CardTitle>
+              <CardDescription>
+                Please complete your profile to view your certificates.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate('/profile-setup')}>
+                Set Up Profile
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const currentLevel = profile.level || 1;
+  const careerPath = careerPaths[profile.careerPath];
   
+  if (!careerPath) {
+    return (
+      <MainLayout>
+        <div className="container pt-20 px-4">
+          <h1 className="text-3xl font-bold mb-4">Your Certificates</h1>
+          <p>Career path information not available.</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 pt-20 pb-10">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Your Certificates</h1>
-          <p className="text-xl text-muted-foreground">
-            View and download your earned certificates
-          </p>
+      <div className="container mx-auto px-4 pt-20 pb-16">
+        <h1 className="text-3xl font-bold mb-2">Your Certificates</h1>
+        <p className="text-muted-foreground text-lg mb-8">
+          Track your progress and showcase your achievements
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {careerPath.levels.map((level, index) => {
+            const levelNumber = index + 1;
+            const isCompleted = levelNumber < currentLevel;
+            const isLocked = levelNumber > currentLevel;
+            
+            return (
+              <Card 
+                key={index} 
+                className={`${isLocked ? 'opacity-60' : isCompleted ? 'border-green-500' : ''}`}
+              >
+                <CardHeader className="relative">
+                  <div className="absolute top-4 right-4">
+                    <Award className={`h-8 w-8 ${isCompleted ? 'text-green-500' : isLocked ? 'text-muted-foreground' : 'text-primary'}`} />
+                  </div>
+                  <CardTitle className="text-xl">Level {levelNumber} Certificate</CardTitle>
+                  <CardDescription>
+                    {level.title}
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="min-h-[100px] border border-dashed border-border rounded-md flex items-center justify-center p-6">
+                    {isLocked ? (
+                      <div className="text-center text-muted-foreground">
+                        <p className="font-semibold">Certificate Locked</p>
+                        <p className="text-sm mt-1">Complete Level {levelNumber} to unlock</p>
+                      </div>
+                    ) : isCompleted ? (
+                      <div className="space-y-2 w-full">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            <span>Issued: {new Date().toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <div className="text-center py-4">
+                          <p className="text-lg font-bold">Certificate of Completion</p>
+                          <p className="text-sm mt-1">This certifies that</p>
+                          <p className="font-semibold mt-1">{user.username}</p>
+                          <p className="text-sm mt-1">has successfully completed</p>
+                          <p className="font-semibold mt-1">{level.title}</p>
+                          <p className="text-sm mt-1">in the</p>
+                          <p className="font-semibold mt-1">{profile.careerPath} Track</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center text-muted-foreground">
+                        <p>Current Level</p>
+                        <p className="text-sm mt-1">Complete to earn certificate</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+                
+                <CardFooter className="flex justify-between">
+                  <Button variant="outline" size="sm" disabled={!isCompleted}>
+                    <Info className="h-4 w-4 mr-1" />
+                    View Details
+                  </Button>
+                  <Button size="sm" disabled={!isCompleted}>
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
         
-        {certificates.length > 0 ? (
-          <>
-            <h2 className="text-2xl font-semibold mb-4">Earned Certificates</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-              {certificates.map((cert) => (
-                <Card key={cert.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="relative bg-gradient-to-r from-primary/20 to-accent/20 aspect-[4/3] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 to-transparent opacity-70"></div>
-                    <div className="relative z-10">
-                      <Award className="h-16 w-16 text-primary mx-auto mb-2" />
-                      <h3 className="text-center font-bold text-xl">{cert.title}</h3>
-                      <p className="text-center text-sm text-muted-foreground">{cert.issuer}</p>
-                    </div>
-                  </div>
-                  
-                  <CardContent className="pt-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Issued Date:</span>
-                      <span className="font-medium flex items-center gap-1">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {cert.issueDate}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Credential ID:</span>
-                      <span className="font-mono text-xs">{cert.credentialId}</span>
-                    </div>
-                  </CardContent>
-                  
-                  <CardFooter className="flex justify-between gap-2">
-                    <Button variant="outline" className="flex-1">
-                      <Share2 className="h-4 w-4 mr-2" /> Share
-                    </Button>
-                    <Button className="flex-1">
-                      <Download className="h-4 w-4 mr-2" /> Download
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </>
-        ) : null}
-        
-        {pendingCertificates.length > 0 ? (
-          <>
-            <h2 className="text-2xl font-semibold mb-4">Certificates in Progress</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {pendingCertificates.map((cert) => (
-                <Card key={cert.id} className="border-dashed">
-                  <CardHeader>
-                    <CardTitle>{cert.title}</CardTitle>
-                    <CardDescription>
-                      {cert.progress}% requirements completed
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {cert.requirements.map((req, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <div className={`h-5 w-5 rounded-full border ${req.done ? 'bg-green-500 border-green-500' : 'border-muted-foreground'} flex items-center justify-center`}>
-                            {req.done && <span className="text-white text-xs">✓</span>}
-                          </div>
-                          <span className={req.done ? 'line-through text-muted-foreground' : ''}>
-                            {req.name}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </>
-        ) : null}
+        {/* No certificates yet */}
+        {currentLevel === 1 && (
+          <Card className="mt-8">
+            <CardContent className="p-6 text-center">
+              <h3 className="text-lg font-semibold mb-2">No Certificates Yet</h3>
+              <p className="text-muted-foreground mb-4">Complete your first level to earn a certificate</p>
+              <Button onClick={() => navigate('/roadmap')}>View Roadmap</Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </MainLayout>
   );

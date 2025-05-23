@@ -1,160 +1,241 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '../hooks/useAuth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { BookOpen, Clock, Award, CheckCircle, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ExternalLink, Search, Filter, CheckCircle, Clock } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { careerPaths } from '../data/careerPaths';
+import { useNavigate } from 'react-router-dom';
+import { Progress } from '@/components/ui/progress';
 
 const CoursesPage = () => {
-  const courses = [
-    {
-      id: 1,
-      title: "Fundamentals of Programming",
-      description: "Learn the core concepts of computer programming that apply across all languages.",
-      level: "Beginner",
-      duration: "8 weeks",
-      lessons: 24,
-      progress: 100,
-      completed: true,
-      image: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=2831&auto=format&fit=crop"
-    },
-    {
-      id: 2,
-      title: "Data Structures and Algorithms",
-      description: "Master the essential data structures and algorithms used in software development.",
-      level: "Intermediate",
-      duration: "10 weeks",
-      lessons: 32,
-      progress: 75,
-      completed: false,
-      image: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=2940&auto=format&fit=crop"
-    },
-    {
-      id: 3,
-      title: "Full-Stack Web Development",
-      description: "Build complete web applications using modern frameworks and tools.",
-      level: "Advanced",
-      duration: "12 weeks",
-      lessons: 40,
-      progress: 45,
-      completed: false,
-      image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2940&auto=format&fit=crop"
-    },
-    {
-      id: 4,
-      title: "Machine Learning Essentials",
-      description: "Understand the fundamentals of machine learning and build practical models.",
-      level: "Intermediate",
-      duration: "10 weeks",
-      lessons: 28,
-      progress: 20,
-      completed: false,
-      image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=2940&auto=format&fit=crop"
-    },
-    {
-      id: 5,
-      title: "Cloud Computing and DevOps",
-      description: "Learn to deploy, scale, and manage applications in the cloud.",
-      level: "Advanced",
-      duration: "8 weeks",
-      lessons: 24,
-      progress: 0,
-      completed: false,
-      image: "https://images.unsplash.com/photo-1508830524289-0adcbe822b40?q=80&w=2911&auto=format&fit=crop"
-    },
-    {
-      id: 6,
-      title: "Cybersecurity Principles",
-      description: "Master the fundamentals of securing systems and applications.",
-      level: "Intermediate",
-      duration: "9 weeks",
-      lessons: 27,
-      progress: 0,
-      completed: false,
-      image: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?q=80&w=2940&auto=format&fit=crop"
-    }
-  ];
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const profile = user?.profile;
   
+  const [searchTerm, setSearchTerm] = useState('');
+  const [levelFilter, setLevelFilter] = useState('all');
+  
+  if (!profile?.careerPath) {
+    return (
+      <MainLayout>
+        <div className="container pt-20 px-4 flex flex-col items-center justify-center min-h-screen">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Complete Your Profile</CardTitle>
+              <CardDescription>
+                Please complete your profile to view courses.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate('/profile-setup')}>
+                Set Up Profile
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const careerPath = careerPaths[profile.careerPath];
+  const currentLevel = profile.level || 1;
+  
+  if (!careerPath) {
+    return (
+      <MainLayout>
+        <div className="container pt-20 px-4">
+          <h1 className="text-3xl font-bold mb-4">Course Library</h1>
+          <p>Career path information not available.</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Collect all courses from all levels
+  const allCourses = careerPath.levels.flatMap((level, levelIndex) => 
+    level.courses.map(course => ({
+      ...course,
+      levelNumber: levelIndex + 1,
+      levelTitle: level.title,
+      isCompleted: levelIndex + 1 < currentLevel,
+      isCurrentLevel: levelIndex + 1 === currentLevel
+    }))
+  );
+  
+  // Apply filters
+  let filteredCourses = allCourses;
+  
+  // Apply level filter
+  if (levelFilter !== 'all') {
+    filteredCourses = filteredCourses.filter(
+      course => course.levelNumber === parseInt(levelFilter)
+    );
+  }
+  
+  // Apply search filter
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    filteredCourses = filteredCourses.filter(
+      course => course.name.toLowerCase().includes(term)
+    );
+  }
+
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 pt-20 pb-10">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Your Courses</h1>
-          <p className="text-xl text-muted-foreground">
-            Track your progress and continue learning
-          </p>
+      <div className="container mx-auto px-4 pt-20 pb-16">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Course Library</h1>
+            <p className="text-muted-foreground">
+              Explore courses for your {profile.careerPath} career path
+            </p>
+          </div>
+          
+          <div className="mt-4 md:mt-0 flex items-center gap-2">
+            <Badge variant="outline" className="bg-primary/10 text-primary">
+              Level {currentLevel}
+            </Badge>
+            <Badge variant="outline">
+              {filteredCourses.filter(c => c.isCompleted).length}/{allCourses.length} Completed
+            </Badge>
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
-            <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="aspect-video relative overflow-hidden">
-                <img 
-                  src={course.image} 
-                  alt={course.title} 
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute top-0 right-0 p-2">
-                  <Badge variant={course.completed ? "default" : "secondary"} className="font-medium">
-                    {course.level}
-                  </Badge>
+        {/* Search and Filter */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search courses..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          <div className="w-full md:w-48">
+            <Select value={levelFilter} onValueChange={setLevelFilter}>
+              <SelectTrigger>
+                <div className="flex items-center">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Filter by level" />
                 </div>
-                {course.completed && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <div className="rounded-full bg-green-500 p-4">
-                      <CheckCircle className="h-10 w-10 text-white" />
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <CardHeader>
-                <CardTitle className="line-clamp-1">{course.title}</CardTitle>
-                <CardDescription className="line-clamp-2">{course.description}</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <div className="flex items-center space-x-1">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>{course.duration}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <BookOpen className="h-4 w-4 text-muted-foreground" />
-                    <span>{course.lessons} Lessons</span>
-                  </div>
-                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                {careerPath.levels.map((_, index) => (
+                  <SelectItem key={index} value={(index + 1).toString()}>
+                    Level {index + 1}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        {/* Progress Overview */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Your Learning Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {careerPath.levels.map((level, index) => {
+                const levelNumber = index + 1;
+                const isCompleted = levelNumber < currentLevel;
+                const isActive = levelNumber === currentLevel;
+                const coursesCount = level.courses.length;
+                const completedCount = isCompleted ? coursesCount : 0;
+                const progress = (completedCount / coursesCount) * 100;
                 
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Progress</span>
-                    <span>{course.progress}%</span>
+                return (
+                  <div key={index} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          isCompleted ? 'bg-green-500 text-white' : isActive ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground'
+                        }`}>
+                          {levelNumber}
+                        </span>
+                        <span className="text-sm font-medium">
+                          {level.title}
+                          {isActive && <Badge variant="outline" className="ml-2 bg-primary/10 text-primary text-xs">Current</Badge>}
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{completedCount}/{coursesCount}</span>
+                    </div>
+                    <Progress value={progress} className="h-1" />
                   </div>
-                  <Progress value={course.progress} className="h-2" />
-                </div>
-              </CardContent>
-              
-              <CardFooter>
-                <Button className="w-full" disabled={course.progress === 0}>
-                  {course.progress === 0 ? (
-                    "Start Course"
-                  ) : course.completed ? (
-                    <>
-                      <Award className="mr-2 h-4 w-4" />
-                      Completed
-                    </>
-                  ) : (
-                    <>
-                      <Play className="mr-2 h-4 w-4" />
-                      Continue Learning
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Course Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCourses.length > 0 ? (
+            filteredCourses.map((course, index) => (
+              <Card key={index} className={`overflow-hidden ${course.isCompleted ? 'border-green-500/40' : course.isCurrentLevel ? 'border-primary/40' : ''}`}>
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <Badge variant="outline" className={course.isCompleted ? 'bg-green-500/10 text-green-500' : course.isCurrentLevel ? 'bg-primary/10 text-primary' : 'bg-secondary/50'}>
+                        Level {course.levelNumber}
+                      </Badge>
+                      <CardTitle className="mt-2 text-lg line-clamp-2">{course.name}</CardTitle>
+                    </div>
+                    {course.isCompleted && (
+                      <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
+                    )}
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="pb-3">
+                  <div className="flex items-center text-sm text-muted-foreground mb-2">
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>Est. 4-6 hours</span>
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {course.levelTitle}
+                  </p>
+                </CardContent>
+                
+                <CardFooter className="pt-0">
+                  <a 
+                    href={course.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="w-full"
+                  >
+                    <Button variant={course.isCompleted ? "outline" : "default"} className="w-full">
+                      {course.isCompleted ? 'Review Course' : 'Start Course'}
+                      <ExternalLink className="h-4 w-4 ml-2" />
+                    </Button>
+                  </a>
+                </CardFooter>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground">No courses found matching your filters.</p>
+              <Button onClick={() => { setSearchTerm(''); setLevelFilter('all'); }} variant="outline" className="mt-4">
+                Clear Filters
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </MainLayout>

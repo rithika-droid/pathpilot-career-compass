@@ -30,7 +30,7 @@ const Landing = () => {
   return (
     <MainLayout onShowAuth={handleShowAuth}>
       {showAuth ? (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-secondary/20">
+        <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-secondary/20">
           {authMode === 'login' ? (
             <LoginForm onToggleMode={toggleAuthMode} />
           ) : (
@@ -38,7 +38,7 @@ const Landing = () => {
           )}
         </div>
       ) : (
-        <div className="w-full">
+        <div className="w-full min-w-full">
           <Hero onShowAuth={handleShowAuth} />
           <Features />
         </div>

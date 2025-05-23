@@ -19,7 +19,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, onShowAuth }) => {
   };
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full overflow-x-hidden">
       {/* Sidebar - only shown when logged in */}
       {user && (
         <Sidebar 
@@ -36,7 +36,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, onShowAuth }) => {
         />
         
         {/* Main content */}
-        <main className={`flex-grow transition-all duration-300 ${user ? 'w-full' : 'w-full'}`}>
+        <main className="flex-grow w-full">
           {children}
         </main>
 

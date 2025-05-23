@@ -1,4 +1,6 @@
 
+import { careerPaths } from '../data/careerPaths';
+
 interface ProfileData {
   subject: string;
   year: string;
@@ -11,86 +13,35 @@ interface ProfileData {
 export const careerDecisionAlgorithm = (profile: ProfileData): string => {
   const { branch, purpose, abroadPlans, financialStatus } = profile;
 
-  // CSE Career Paths
-  const cseCareerPaths = [
-    'Full Stack Developer',
-    'Software Engineer',
-    'DevOps Engineer',
-    'Cloud Architect',
-    'Cybersecurity Specialist',
-    'Blockchain Developer',
-    'Game Developer',
-    'Mobile App Developer',
-    'System Administrator',
-    'Software Architect'
-  ];
+  // Get available careers from our careerPaths data
+  const availableCareers = Object.keys(careerPaths);
 
-  // CS Career Paths
-  const csCareerPaths = [
-    'Frontend Developer',
-    'Backend Developer',
-    'Embedded Systems Engineer',
-    'Network Engineer',
-    'Database Administrator',
-    'UI/UX Designer',
-    'Quality Assurance Engineer',
-    'Technical Writer',
-    'IT Consultant',
-    'Quantum Computing Researcher'
-  ];
-
-  // Data Science Career Paths
-  const dsCareerPaths = [
-    'Data Scientist',
-    'Data Analyst',
-    'Data Engineer',
-    'Business Intelligence Analyst',
-    'Statistical Analyst',
-    'Data Architect',
-    'Machine Learning Engineer',
-    'Research Scientist',
-    'Product Analyst',
-    'Quantitative Analyst'
-  ];
-
-  // AI/ML Career Paths
-  const aimlCareerPaths = [
-    'Machine Learning Engineer',
-    'AI Research Scientist',
-    'Computer Vision Engineer',
-    'Natural Language Processing Engineer',
-    'AI Product Manager',
-    'Robotics Engineer',
-    'Deep Learning Engineer',
-    'AI Ethics Specialist',
-    'Autonomous Systems Engineer',
-    'AI Consultant'
-  ];
-
+  // Branch-based filtering
   let careerPool: string[] = [];
-
-  // Select career pool based on branch
+  
   switch (branch) {
     case 'CSE':
-      careerPool = cseCareerPaths;
+      careerPool = availableCareers.filter(c => ['Machine Learning Engineer', 'AI Research Scientist'].includes(c));
       break;
     case 'CS':
-      careerPool = csCareerPaths;
+      careerPool = availableCareers.filter(c => ['UI/UX Designer', 'Machine Learning Engineer'].includes(c));
       break;
     case 'DS':
-      careerPool = dsCareerPaths;
+      careerPool = availableCareers.filter(c => ['Data Scientist', 'Machine Learning Engineer'].includes(c));
       break;
     case 'AI/ML':
-      careerPool = aimlCareerPaths;
+      careerPool = availableCareers.filter(c => ['Machine Learning Engineer', 'AI Research Scientist'].includes(c));
       break;
+    case 'Cybersecurity':
+      return 'Cybersecurity Specialist';
     default:
-      careerPool = [...cseCareerPaths, ...csCareerPaths];
+      careerPool = availableCareers;
   }
 
-  // Apply decision logic based on other factors
+  // Apply decision logic based on purpose
   if (purpose === 'Research' || abroadPlans === 'Yes') {
     const researchCareers = careerPool.filter(career => 
-      career.includes('Research') || career.includes('Scientist') || career.includes('Engineer')
+      career.includes('Research') || career.includes('Scientist')
     );
     if (researchCareers.length > 0) {
       return researchCareers[0];
@@ -99,7 +50,7 @@ export const careerDecisionAlgorithm = (profile: ProfileData): string => {
 
   if (purpose === 'Entrepreneurship') {
     const entrepreneurialCareers = careerPool.filter(career =>
-      career.includes('Product') || career.includes('Full Stack') || career.includes('Architect')
+      career.includes('Engineer') || career === 'UI/UX Designer'
     );
     if (entrepreneurialCareers.length > 0) {
       return entrepreneurialCareers[0];
@@ -108,7 +59,7 @@ export const careerDecisionAlgorithm = (profile: ProfileData): string => {
 
   if (financialStatus === '0-3' || financialStatus === '3-6') {
     const accessibleCareers = careerPool.filter(career =>
-      career.includes('Developer') || career.includes('Analyst') || career.includes('Engineer')
+      career.includes('Engineer') || career === 'Data Scientist'
     );
     if (accessibleCareers.length > 0) {
       return accessibleCareers[0];
@@ -116,42 +67,60 @@ export const careerDecisionAlgorithm = (profile: ProfileData): string => {
   }
 
   // Default: return first career from the pool
-  return careerPool[0] || 'Software Developer';
+  return careerPool[0] || 'Data Scientist';
 };
 
 export const getCareerRoadmap = (careerPath: string) => {
-  const defaultRoadmap = {
-    level1: {
-      title: 'Foundation',
-      courses: ['Programming Basics', 'Computer Science Fundamentals'],
-      projects: ['Hello World App', 'Basic Calculator'],
-      duration: '2-3 months'
-    },
-    level2: {
-      title: 'Intermediate',
-      courses: ['Data Structures', 'Algorithms', 'Database Basics'],
-      projects: ['Personal Portfolio', 'CRUD Application'],
-      duration: '3-4 months'
-    },
-    level3: {
-      title: 'Advanced',
-      courses: ['System Design', 'Advanced Frameworks', 'Testing'],
-      projects: ['Full Stack Project', 'API Development'],
-      duration: '4-5 months'
-    },
-    level4: {
-      title: 'Specialization',
-      courses: ['Domain Specific Skills', 'Industry Tools', 'Best Practices'],
-      projects: ['Industry-level Project', 'Open Source Contribution'],
-      duration: '5-6 months'
-    },
-    level5: {
-      title: 'Expert',
-      courses: ['Leadership', 'Architecture', 'Advanced Topics'],
-      projects: ['Capstone Project', 'Team Leadership'],
-      duration: '6+ months'
-    }
-  };
-
-  return defaultRoadmap;
+  // Now we get data from our careerPaths
+  const career = careerPaths[careerPath];
+  
+  if (!career) {
+    // Provide a default roadmap if career not found
+    return {
+      level1: {
+        title: 'Foundation',
+        courses: ['Programming Basics', 'Computer Science Fundamentals'],
+        projects: ['Hello World App', 'Basic Calculator'],
+        duration: '2-3 months'
+      },
+      level2: {
+        title: 'Intermediate',
+        courses: ['Data Structures', 'Algorithms', 'Database Basics'],
+        projects: ['Personal Portfolio', 'CRUD Application'],
+        duration: '3-4 months'
+      },
+      level3: {
+        title: 'Advanced',
+        courses: ['System Design', 'Advanced Frameworks', 'Testing'],
+        projects: ['Full Stack Project', 'API Development'],
+        duration: '4-5 months'
+      },
+      level4: {
+        title: 'Specialization',
+        courses: ['Domain Specific Skills', 'Industry Tools', 'Best Practices'],
+        projects: ['Industry-level Project', 'Open Source Contribution'],
+        duration: '5-6 months'
+      },
+      level5: {
+        title: 'Expert',
+        courses: ['Leadership', 'Architecture', 'Advanced Topics'],
+        projects: ['Capstone Project', 'Team Leadership'],
+        duration: '6+ months'
+      }
+    };
+  }
+  
+  // Return the career's levels data in a format compatible with existing code
+  const roadmap: any = {};
+  
+  career.levels.forEach((level, index) => {
+    roadmap[`level${index + 1}`] = {
+      title: level.title,
+      courses: level.courses.map(course => course.name),
+      projects: level.projects || [],
+      duration: level.duration || '3-4 months'
+    };
+  });
+  
+  return roadmap;
 };
