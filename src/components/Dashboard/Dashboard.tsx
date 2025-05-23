@@ -8,6 +8,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { BookOpen, Trophy, Calendar, Play, Target, Star } from 'lucide-react';
 import { getCareerRoadmap } from '../../utils/careerAlgorithm';
 import MainLayout from '../Layout/MainLayout';
+import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '../../hooks/use-mobile';
 
 interface RoadmapLevel {
   title: string;
@@ -21,6 +23,8 @@ interface Roadmap {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const profile = user?.profile;
   
   if (!profile?.careerPath) {
@@ -33,6 +37,10 @@ const Dashboard = () => {
   const badges = profile.badges || [];
 
   const progressPercentage = (currentLevel / 5) * 100;
+  
+  const handleContinueLearning = () => {
+    navigate('/courses', { state: { level: 1 } });
+  };
 
   return (
     <MainLayout>
@@ -122,15 +130,17 @@ const Dashboard = () => {
                 
                 <div className="space-y-2">
                   <h4 className="font-semibold">Current Courses:</h4>
-                  {roadmap[`level${currentLevel}` as keyof typeof roadmap]?.courses.map((course, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-primary rounded-full"></div>
-                      <span className="text-sm">{course}</span>
-                    </div>
-                  ))}
+                  <div className="max-h-24 overflow-y-auto pr-1">
+                    {roadmap[`level${currentLevel}` as keyof typeof roadmap]?.courses.map((course, index) => (
+                      <div key={index} className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 bg-primary rounded-full"></div>
+                        <span className="text-sm">{course}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <Button className="w-full">
+                <Button className="w-full" onClick={handleContinueLearning}>
                   Continue Learning
                 </Button>
               </div>
@@ -176,8 +186,8 @@ const Dashboard = () => {
               Complete journey to become a {profile.careerPath}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <CardContent className="pb-6">
+            <div className={`grid grid-cols-1 ${isMobile ? '' : 'md:grid-cols-5'} gap-4`}>
               {Object.entries(roadmap).map(([key, level], index) => {
                 const levelNum = index + 1;
                 const isCompleted = levelNum < currentLevel;

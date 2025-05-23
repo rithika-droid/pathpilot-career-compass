@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { useAuth } from '../hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -15,16 +15,24 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { careerPaths } from '../data/careerPaths';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Progress } from '@/components/ui/progress';
 
 const CoursesPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const profile = user?.profile;
   
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState('all');
+  
+  // Check if we have a specific level to filter by from navigation state
+  useEffect(() => {
+    if (location.state && location.state.level) {
+      setLevelFilter(location.state.level.toString());
+    }
+  }, [location.state]);
   
   if (!profile?.careerPath) {
     return (

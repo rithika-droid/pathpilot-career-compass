@@ -6,6 +6,7 @@ import { Moon, Sun, Search, Menu } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import Notifications from './Notifications/Notifications';
 import UserProfile from './UserProfile/UserProfile';
+import { useIsMobile } from '../hooks/use-mobile';
 
 interface NavbarProps {
   onShowAuth?: (show: boolean, mode: 'login' | 'signup') => void;
@@ -15,6 +16,7 @@ interface NavbarProps {
 const Navbar = ({ onShowAuth, toggleSidebar }: NavbarProps) => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
+  const isMobile = useIsMobile();
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border">
