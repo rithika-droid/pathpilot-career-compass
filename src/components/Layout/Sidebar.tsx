@@ -57,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </Button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-3 rounded-sm">
+      <nav className="flex-1 overflow-y-auto p-3 py-[12px] px-[10px] mx-0 my-[10px] bg-gray-950 rounded-none">
         <ul className="space-y-1">
           {navItems.map(item => <li key={item.name}>
               <NavLink to={item.path} className={({
