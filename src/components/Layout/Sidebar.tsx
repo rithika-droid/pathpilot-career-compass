@@ -2,7 +2,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  Home, 
   UserCircle, 
   LayoutDashboard, 
   Route, 
@@ -24,9 +23,8 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const navItems = [
-    { name: 'Home', path: '/', icon: <Home className="h-5 w-5" /> },
-    { name: 'Profile Setup', path: '/profile-setup', icon: <UserCircle className="h-5 w-5" /> },
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
+    { name: 'Profile Setup', path: '/profile-setup', icon: <UserCircle className="h-5 w-5" /> },
     { name: 'Roadmap', path: '/roadmap', icon: <Route className="h-5 w-5" /> },
     { name: 'Courses', path: '/courses', icon: <GraduationCap className="h-5 w-5" /> },
     { name: 'Certificates', path: '/certificates', icon: <Award className="h-5 w-5" /> },
