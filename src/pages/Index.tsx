@@ -4,17 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import Landing from './Landing';
 import Dashboard from '../components/Dashboard/Dashboard';
 import ProfileSetupForm from '../components/ProfileSetup/ProfileSetupForm';
-import { ThemeProvider } from '../components/ThemeProvider';
 
 const Index = () => {
-  return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
-  );
-};
-
-const AppContent = () => {
   const { user } = useAuth();
 
   if (!user) {

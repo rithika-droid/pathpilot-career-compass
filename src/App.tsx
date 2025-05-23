@@ -15,6 +15,7 @@ import HelpPage from "./pages/HelpPage";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import ProfileSetupForm from "./components/ProfileSetup/ProfileSetupForm";
 import Dashboard from "./components/Dashboard/Dashboard";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
@@ -31,68 +32,70 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            
-            {/* Protected routes */}
-            <Route path="/profile-setup" element={
-              <ProtectedRoute>
-                <ProfileSetupForm />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/roadmap" element={
-              <ProtectedRoute>
-                <RoadmapPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/courses" element={
-              <ProtectedRoute>
-                <CoursesPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/certificates" element={
-              <ProtectedRoute>
-                <CertificatesPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/rewards" element={
-              <ProtectedRoute>
-                <RewardsPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/help" element={
-              <ProtectedRoute>
-                <HelpPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              
+              {/* Protected routes */}
+              <Route path="/profile-setup" element={
+                <ProtectedRoute>
+                  <ProfileSetupForm />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/roadmap" element={
+                <ProtectedRoute>
+                  <RoadmapPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/courses" element={
+                <ProtectedRoute>
+                  <CoursesPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/certificates" element={
+                <ProtectedRoute>
+                  <CertificatesPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/rewards" element={
+                <ProtectedRoute>
+                  <RewardsPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <SettingsPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/help" element={
+                <ProtectedRoute>
+                  <HelpPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
