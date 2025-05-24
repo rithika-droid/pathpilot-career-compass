@@ -1,17 +1,27 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Trophy, Star, Target, Award, Gift } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 const RewardsPage = () => {
-  const { userProfile } = useAuth();
+  const { userProfile, updateProfile } = useAuth();
+  const { toast } = useToast();
+  const [claimedRewards, setClaimedRewards] = useState<string[]>([]);
   
   const currentLevel = userProfile?.level || 1;
   const currentPoints = userProfile?.points || 0;
   const badges = userProfile?.badges || [];
+
+  useEffect(() => {
+    // Load claimed rewards from localStorage
+    const savedClaimed = JSON.parse(localStorage.getItem('pathpilot_claimed_rewards') || '[]');
+    setClaimedRewards(savedClaimed);
+  }, []);
 
   // Sample reward data
   const achievements = [
@@ -22,10 +32,57 @@ const RewardsPage = () => {
   ];
 
   const rewards = [
-    { id: 1, title: "Certificate Template", description: "Unlock premium certificate designs", cost: 500, unlocked: currentPoints >= 500 },
-    { id: 2, title: "Priority Support", description: "Get faster help from mentors", cost: 1000, unlocked: currentPoints >= 1000 },
-    { id: 3, title: "Career Consultation", description: "1-on-1 session with career expert", cost: 2000, unlocked: currentPoints >= 2000 }
+    { 
+      id: 'premium_cert', 
+      title: "Certificate Template", 
+      description: "Unlock premium certificate designs", 
+      cost: 500, 
+      unlocked: currentPoints >= 500,
+      claimed: claimedRewards.includes('premium_cert')
+    },
+    { 
+      id: 'priority_support', 
+      title: "Priority Support", 
+      description: "Get faster help from mentors", 
+      cost: 1000, 
+      unlocked: currentPoints >= 1000,
+      claimed: claimedRewards.includes('priority_support')
+    },
+    { 
+      id: 'career_consultation', 
+      title: "Career Consultation", 
+      description: "1-on-1 session with career expert", 
+      cost: 2000, 
+      unlocked: currentPoints >= 2000,
+      claimed: claimedRewards.includes('career_consultation')
+    }
   ];
+
+  const handleClaimReward = (reward: typeof rewards[0]) => {
+    if (!reward.unlocked || reward.claimed || currentPoints < reward.cost) {
+      return;
+    }
+
+    // Deduct points and mark as claimed
+    const newPoints = currentPoints - reward.cost;
+    const newClaimedRewards = [...claimedRewards, reward.id];
+    
+    if (userProfile) {
+      updateProfile({
+        ...userProfile,
+        points: newPoints
+      });
+    }
+    
+    // Save to localStorage
+    setClaimedRewards(newClaimedRewards);
+    localStorage.setItem('pathpilot_claimed_rewards', JSON.stringify(newClaimedRewards));
+    
+    toast({
+      title: "🎁 Reward claimed successfully!",
+      description: `You've claimed "${reward.title}" for ${reward.cost} points!`,
+    });
+  };
 
   return (
     <MainLayout>
@@ -80,11 +137,14 @@ const RewardsPage = () => {
           <h2 className="text-2xl font-semibold mb-6">Rewards Store</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {rewards.map((reward) => (
-              <Card key={reward.id} className={`${reward.unlocked ? 'border-green-500' : ''}`}>
+              <Card key={reward.id} className={`${reward.claimed ? 'border-green-500 bg-green-50/30 dark:bg-green-950/20' : reward.unlocked ? 'border-primary' : ''}`}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <Gift className={`h-8 w-8 ${reward.unlocked ? 'text-green-500' : 'text-muted-foreground'}`} />
-                    <Badge variant={reward.unlocked ? "default" : "secondary"}>
+                    <Gift className={`h-8 w-8 ${
+                      reward.claimed ? 'text-green-500' : 
+                      reward.unlocked ? 'text-primary' : 'text-muted-foreground'
+                    }`} />
+                    <Badge variant={reward.claimed ? "default" : reward.unlocked ? "secondary" : "outline"}>
                       {reward.cost} points
                     </Badge>
                   </div>
@@ -93,10 +153,17 @@ const RewardsPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">
-                    {reward.unlocked ? (
+                    {reward.claimed ? (
                       <Badge variant="outline" className="bg-green-500/10 text-green-600">
-                        ✓ Available
+                        ✓ Claimed
                       </Badge>
+                    ) : reward.unlocked ? (
+                      <Button 
+                        onClick={() => handleClaimReward(reward)}
+                        className="w-full"
+                      >
+                        Claim Reward
+                      </Button>
                     ) : (
                       <Badge variant="secondary">
                         Need {reward.cost - currentPoints} more points
@@ -129,6 +196,12 @@ const RewardsPage = () => {
                 <span className="text-sm font-medium">Achievements Earned</span>
                 <span className="text-sm text-muted-foreground">
                   {achievements.filter(a => a.earned).length}/{achievements.length}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Rewards Claimed</span>
+                <span className="text-sm text-muted-foreground">
+                  {claimedRewards.length}/{rewards.length}
                 </span>
               </div>
             </div>

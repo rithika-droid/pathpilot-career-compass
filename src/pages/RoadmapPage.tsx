@@ -1,22 +1,23 @@
-
 import React from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Lock, PlayCircle, Trophy, Target, BookOpen } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Trophy, Target, BookOpen, Award } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { careerPaths } from '../data/careerPaths';
 import { useNavigate } from 'react-router-dom';
 import QuizComponent from '../components/Quiz/QuizComponent';
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const RoadmapPage = () => {
   const { userProfile, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizLevel, setQuizLevel] = useState(1);
+  const { toast } = useToast();
   
   if (!userProfile?.careerPath) {
     return (
@@ -58,11 +59,53 @@ const RoadmapPage = () => {
     if (passed && userProfile) {
       const newLevel = Math.min(currentLevel + 1, careerPath.levels.length);
       const newPoints = (userProfile.points || 0) + 100;
+      const newBadges = [...(userProfile.badges || [])];
       
+      // Add achievement badge for completing level
+      const levelBadge = `Level ${currentLevel} Master`;
+      if (!newBadges.includes(levelBadge)) {
+        newBadges.push(levelBadge);
+      }
+
+      // Store certificate in localStorage
+      const certificates = JSON.parse(localStorage.getItem('pathpilot_certificates') || '[]');
+      const certificateId = `${userProfile.careerPath}-level-${currentLevel}`;
+      
+      if (!certificates.find((cert: any) => cert.id === certificateId)) {
+        const newCertificate = {
+          id: certificateId,
+          title: `Level ${currentLevel} Certificate`,
+          description: careerPath.levels[currentLevel - 1].title,
+          careerPath: userProfile.careerPath,
+          level: currentLevel,
+          issuedAt: new Date().toISOString(),
+          score: score
+        };
+        certificates.push(newCertificate);
+        localStorage.setItem('pathpilot_certificates', JSON.stringify(certificates));
+        
+        toast({
+          title: "🏅 Certificate earned!",
+          description: `Certificate added to your profile for completing Level ${currentLevel}!`,
+        });
+      }
+
       updateProfile({
         ...userProfile,
         level: newLevel,
-        points: newPoints
+        points: newPoints,
+        badges: newBadges
+      });
+
+      toast({
+        title: "🎉 Level completed!",
+        description: `You've earned 100 points and unlocked Level ${newLevel}!`,
+      });
+    } else {
+      toast({
+        title: "Keep trying!",
+        description: "You need 70% to pass. Review the material and try again!",
+        variant: "destructive",
       });
     }
     setShowQuiz(false);
@@ -175,9 +218,14 @@ const RoadmapPage = () => {
                         </CardDescription>
                       </div>
                     </div>
-                    <Badge variant={isCompleted ? "default" : isCurrent ? "secondary" : "outline"}>
-                      {isCompleted ? "Completed" : isCurrent ? "Current" : "Locked"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={isCompleted ? "default" : isCurrent ? "secondary" : "outline"}>
+                        {isCompleted ? "Completed" : isCurrent ? "Current" : "Locked"}
+                      </Badge>
+                      {isCompleted && (
+                        <Award className="h-5 w-5 text-yellow-500" title="Certificate Available" />
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 

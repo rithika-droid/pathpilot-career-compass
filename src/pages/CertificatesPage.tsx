@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,10 +8,27 @@ import { useAuth } from '../hooks/useAuth';
 import { careerPaths } from '../data/careerPaths';
 import { useNavigate } from 'react-router-dom';
 
+interface Certificate {
+  id: string;
+  title: string;
+  description: string;
+  careerPath: string;
+  level: number;
+  issuedAt: string;
+  score?: number;
+}
+
 const CertificatesPage = () => {
   const { user, userProfile, profile } = useAuth();
   const navigate = useNavigate();
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
   
+  useEffect(() => {
+    // Load certificates from localStorage
+    const savedCertificates = JSON.parse(localStorage.getItem('pathpilot_certificates') || '[]');
+    setCertificates(savedCertificates);
+  }, []);
+
   if (!userProfile?.careerPath) {
     return (
       <MainLayout>
@@ -48,6 +65,45 @@ const CertificatesPage = () => {
     );
   }
 
+  const displayName = localStorage.getItem('pathpilot_display_name') || 
+                     profile?.username || 
+                     user?.user_metadata?.full_name || 
+                     user?.email?.split('@')[0] || 
+                     'User';
+
+  const handleDownloadCertificate = (certificate: Certificate) => {
+    // Simple text-based certificate download
+    const certificateText = `
+CERTIFICATE OF COMPLETION
+
+This certifies that
+
+${displayName}
+
+has successfully completed
+
+${certificate.title}
+${certificate.description}
+
+in the ${userProfile.careerPath} Track
+
+Score: ${certificate.score || 'N/A'}%
+Issued: ${new Date(certificate.issuedAt).toLocaleDateString()}
+
+PathPilot Learning Platform
+    `;
+
+    const blob = new Blob([certificateText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${certificate.title.replace(/\s+/g, '_')}_Certificate.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 pt-20 pb-16">
@@ -56,11 +112,68 @@ const CertificatesPage = () => {
           Track your progress and showcase your achievements
         </p>
         
+        {certificates.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Earned Certificates</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {certificates.map((certificate) => (
+                <Card key={certificate.id} className="border-green-500 bg-green-50/50 dark:bg-green-950/20">
+                  <CardHeader className="relative">
+                    <div className="absolute top-4 right-4">
+                      <Award className="h-8 w-8 text-green-500" />
+                    </div>
+                    <CardTitle className="text-xl">{certificate.title}</CardTitle>
+                    <CardDescription>
+                      {certificate.description}
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <div className="space-y-2 w-full">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span>Issued: {new Date(certificate.issuedAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <div className="text-center py-4 bg-white/50 dark:bg-gray-800/50 rounded border-2 border-dashed border-green-300">
+                        <p className="text-lg font-bold">Certificate of Completion</p>
+                        <p className="text-sm mt-1">This certifies that</p>
+                        <p className="font-semibold mt-1">{displayName}</p>
+                        <p className="text-sm mt-1">has successfully completed</p>
+                        <p className="font-semibold mt-1">{certificate.description}</p>
+                        <p className="text-sm mt-1">in the</p>
+                        <p className="font-semibold mt-1">{userProfile.careerPath} Track</p>
+                        {certificate.score && (
+                          <p className="text-sm mt-2 text-green-600">Score: {certificate.score}%</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                  
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" size="sm">
+                      <Info className="h-4 w-4 mr-1" />
+                      View Details
+                    </Button>
+                    <Button size="sm" onClick={() => handleDownloadCertificate(certificate)}>
+                      <Download className="h-4 w-4 mr-1" />
+                      Download
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <h2 className="text-xl font-semibold mb-4">Available Certificates</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {careerPath.levels.map((level, index) => {
             const levelNumber = index + 1;
             const isCompleted = levelNumber < currentLevel;
             const isLocked = levelNumber > currentLevel;
+            const hasEarnedCertificate = certificates.some(cert => cert.level === levelNumber);
             
             return (
               <Card 
@@ -69,7 +182,11 @@ const CertificatesPage = () => {
               >
                 <CardHeader className="relative">
                   <div className="absolute top-4 right-4">
-                    <Award className={`h-8 w-8 ${isCompleted ? 'text-green-500' : isLocked ? 'text-muted-foreground' : 'text-primary'}`} />
+                    <Award className={`h-8 w-8 ${
+                      hasEarnedCertificate ? 'text-green-500' : 
+                      isCompleted ? 'text-yellow-500' : 
+                      isLocked ? 'text-muted-foreground' : 'text-primary'
+                    }`} />
                   </div>
                   <CardTitle className="text-xl">Level {levelNumber} Certificate</CardTitle>
                   <CardDescription>
@@ -84,23 +201,16 @@ const CertificatesPage = () => {
                         <p className="font-semibold">Certificate Locked</p>
                         <p className="text-sm mt-1">Complete Level {levelNumber} to unlock</p>
                       </div>
+                    ) : hasEarnedCertificate ? (
+                      <div className="text-center text-green-600">
+                        <Award className="h-8 w-8 mx-auto mb-2" />
+                        <p className="font-semibold">Certificate Earned!</p>
+                        <p className="text-sm mt-1">View in Earned Certificates section above</p>
+                      </div>
                     ) : isCompleted ? (
-                      <div className="space-y-2 w-full">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            <span>Issued: {new Date().toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                        <div className="text-center py-4">
-                          <p className="text-lg font-bold">Certificate of Completion</p>
-                          <p className="text-sm mt-1">This certifies that</p>
-                          <p className="font-semibold mt-1">{profile?.username || user?.email?.split('@')[0] || 'User'}</p>
-                          <p className="text-sm mt-1">has successfully completed</p>
-                          <p className="font-semibold mt-1">{level.title}</p>
-                          <p className="text-sm mt-1">in the</p>
-                          <p className="font-semibold mt-1">{userProfile.careerPath} Track</p>
-                        </div>
+                      <div className="text-center text-yellow-600">
+                        <p className="font-semibold">Level Completed</p>
+                        <p className="text-sm mt-1">Take the quiz to earn your certificate</p>
                       </div>
                     ) : (
                       <div className="text-center text-muted-foreground">
@@ -112,11 +222,20 @@ const CertificatesPage = () => {
                 </CardContent>
                 
                 <CardFooter className="flex justify-between">
-                  <Button variant="outline" size="sm" disabled={!isCompleted}>
+                  <Button variant="outline" size="sm" disabled={!isCompleted && !hasEarnedCertificate}>
                     <Info className="h-4 w-4 mr-1" />
                     View Details
                   </Button>
-                  <Button size="sm" disabled={!isCompleted}>
+                  <Button 
+                    size="sm" 
+                    disabled={!hasEarnedCertificate}
+                    onClick={() => {
+                      if (hasEarnedCertificate) {
+                        const cert = certificates.find(c => c.level === levelNumber);
+                        if (cert) handleDownloadCertificate(cert);
+                      }
+                    }}
+                  >
                     <Download className="h-4 w-4 mr-1" />
                     Download
                   </Button>
@@ -127,7 +246,7 @@ const CertificatesPage = () => {
         </div>
         
         {/* No certificates yet */}
-        {currentLevel === 1 && (
+        {certificates.length === 0 && currentLevel === 1 && (
           <Card className="mt-8">
             <CardContent className="p-6 text-center">
               <h3 className="text-lg font-semibold mb-2">No Certificates Yet</h3>

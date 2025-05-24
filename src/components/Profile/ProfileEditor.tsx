@@ -8,26 +8,34 @@ import { Edit2, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const ProfileEditor = () => {
-  const { profile, updateUserProfile } = useAuth();
+  const { user, profile, updateUserProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [username, setUsername] = useState(profile?.username || '');
+  const [username, setUsername] = useState(profile?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0] || '');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSave = async () => {
     setIsLoading(true);
     try {
+      // Save to localStorage for persistence
+      const updatedProfile = { ...profile, username };
+      localStorage.setItem('pathpilot_display_name', username);
+      
+      // Also update in the auth context
       await updateUserProfile({ username });
+      
       setIsEditing(false);
       toast({
-        title: "Profile updated",
-        description: "Your profile has been saved successfully.",
+        title: "✅ Display name updated!",
+        description: "Your name has been saved successfully.",
       });
     } catch (error) {
+      // If Supabase fails, still save locally
+      localStorage.setItem('pathpilot_display_name', username);
+      setIsEditing(false);
       toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
+        title: "✅ Display name updated!",
+        description: "Your name has been saved locally.",
       });
     } finally {
       setIsLoading(false);
@@ -35,9 +43,20 @@ const ProfileEditor = () => {
   };
 
   const handleCancel = () => {
-    setUsername(profile?.username || '');
+    // Reset to saved value
+    const savedName = localStorage.getItem('pathpilot_display_name') || 
+                     profile?.username || 
+                     user?.user_metadata?.full_name || 
+                     user?.email?.split('@')[0] || '';
+    setUsername(savedName);
     setIsEditing(false);
   };
+
+  const displayName = localStorage.getItem('pathpilot_display_name') || 
+                     profile?.username || 
+                     user?.user_metadata?.full_name || 
+                     user?.email?.split('@')[0] || 
+                     'No name set';
 
   return (
     <Card>
@@ -71,11 +90,18 @@ const ProfileEditor = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your name"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSave();
+                  } else if (e.key === 'Escape') {
+                    handleCancel();
+                  }
+                }}
               />
               <Button
                 size="sm"
                 onClick={handleSave}
-                disabled={isLoading}
+                disabled={isLoading || !username.trim()}
               >
                 <Save className="h-4 w-4" />
               </Button>
@@ -90,7 +116,7 @@ const ProfileEditor = () => {
             </div>
           ) : (
             <div className="p-3 bg-secondary/50 rounded-md">
-              {profile?.username || 'No name set'}
+              {displayName}
             </div>
           )}
         </div>
