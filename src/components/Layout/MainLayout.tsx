@@ -29,10 +29,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, onShowAuth }) => {
       )}
       
       <div className="flex flex-col flex-grow w-full">
-        {/* Navbar */}
+        {/* Navbar with toggleSidebar prop */}
         <Navbar 
           onShowAuth={onShowAuth} 
-          toggleSidebar={toggleSidebar}
+          toggleSidebar={user ? toggleSidebar : undefined}
         />
         
         {/* Main content */}

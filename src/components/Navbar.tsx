@@ -22,7 +22,7 @@ const Navbar = ({ onShowAuth, toggleSidebar }: NavbarProps) => {
     <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          {user && (
+          {user && toggleSidebar && (
             <Button 
               variant="ghost" 
               size="icon" 
