@@ -1,21 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  profile?: UserProfile;
-  notifications?: Notification[];
-}
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  date: string;
-  read: boolean;
-}
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
 interface UserProfile {
   subject: string;
@@ -31,12 +17,25 @@ interface UserProfile {
   avatar?: string;
 }
 
+interface Profile {
+  id: string;
+  username: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
+  profile: Profile | null;
+  userProfile: UserProfile | null;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   signup: (email: string, password: string, username: string) => Promise<void>;
   logout: () => void;
   updateProfile: (profile: UserProfile) => void;
+  updateUserProfile: (updates: Partial<Profile>) => Promise<void>;
   updateAvatar: (avatarUrl: string) => void;
 }
 
@@ -44,100 +43,160 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  // Mock authentication for demo
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile from database
+          setTimeout(async () => {
+            try {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+              
+              if (profileData) {
+                setProfile(profileData);
+              }
+              
+              // Load legacy profile from localStorage if exists
+              const savedUser = localStorage.getItem('pathpilot_user');
+              if (savedUser) {
+                try {
+                  const parsedUser = JSON.parse(savedUser);
+                  if (parsedUser.profile) {
+                    setUserProfile(parsedUser.profile);
+                  }
+                } catch (e) {
+                  console.error('Error parsing user data from localStorage', e);
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+            }
+          }, 0);
+        } else {
+          setProfile(null);
+          setUserProfile(null);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const login = async (email: string, password: string) => {
-    try {
-      // Simulate API call
-      const mockUser: User = {
-        id: '1',
-        email,
-        username: email.split('@')[0],
-        notifications: [
-          {
-            id: '1',
-            title: 'Welcome to PathPilot',
-            message: 'Get started by completing your profile',
-            date: new Date().toISOString(),
-            read: false
-          }
-        ]
-      };
-      setUser(mockUser);
-      localStorage.setItem('pathpilot_user', JSON.stringify(mockUser));
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Login error:', error);
-      return Promise.reject('Invalid email or password');
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`
+      }
+    });
+    
+    if (error) {
+      throw new Error(error.message);
     }
   };
 
   const signup = async (email: string, password: string, username: string) => {
-    try {
-      // Simulate API call
-      const mockUser: User = {
-        id: Date.now().toString(),
-        email,
-        username,
-        notifications: [
-          {
-            id: '1',
-            title: 'Welcome to PathPilot',
-            message: 'Get started by completing your profile',
-            date: new Date().toISOString(),
-            read: false
-          }
-        ]
-      };
-      setUser(mockUser);
-      localStorage.setItem('pathpilot_user', JSON.stringify(mockUser));
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Signup error:', error);
-      return Promise.reject('Could not create account');
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: username,
+        }
+      }
+    });
+    
+    if (error) {
+      throw new Error(error.message);
     }
   };
 
-  const logout = () => {
-    setUser(null);
+  const logout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('pathpilot_user');
   };
 
   const updateProfile = (profile: UserProfile) => {
+    setUserProfile(profile);
+    // Also update localStorage for backward compatibility
     if (user) {
-      const updatedUser = { ...user, profile };
-      setUser(updatedUser);
-      localStorage.setItem('pathpilot_user', JSON.stringify(updatedUser));
+      const userData = {
+        id: user.id,
+        email: user.email,
+        username: user.user_metadata?.full_name || user.email?.split('@')[0],
+        profile
+      };
+      localStorage.setItem('pathpilot_user', JSON.stringify(userData));
+    }
+  };
+
+  const updateUserProfile = async (updates: Partial<Profile>) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setProfile(data);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
     }
   };
 
   const updateAvatar = (avatarUrl: string) => {
-    if (user && user.profile) {
-      const updatedProfile = { ...user.profile, avatar: avatarUrl };
-      const updatedUser = { ...user, profile: updatedProfile };
-      setUser(updatedUser);
-      localStorage.setItem('pathpilot_user', JSON.stringify(updatedUser));
+    if (userProfile) {
+      const updatedProfile = { ...userProfile, avatar: avatarUrl };
+      updateProfile(updatedProfile);
     }
   };
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem('pathpilot_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error('Error parsing user data from localStorage', e);
-        localStorage.removeItem('pathpilot_user');
-      }
-    }
-  }, []);
-
   const value = {
     user,
+    session,
+    profile,
+    userProfile,
     login,
+    loginWithGoogle,
     signup,
     logout,
     updateProfile,
+    updateUserProfile,
     updateAvatar
   };
 

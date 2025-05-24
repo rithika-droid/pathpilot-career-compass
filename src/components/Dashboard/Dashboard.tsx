@@ -8,6 +8,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { BookOpen, Trophy, Calendar, Play, Target, Star } from 'lucide-react';
 import { getCareerRoadmap } from '../../utils/careerAlgorithm';
 import MainLayout from '../Layout/MainLayout';
+import ProfileEditor from '../Profile/ProfileEditor';
+import ContactInfo from '../Contact/ContactInfo';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/use-mobile';
 
@@ -22,10 +24,10 @@ interface Roadmap {
 }
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const profile = user?.profile;
+  const profile = userProfile;
   
   if (!profile?.careerPath) {
     return <div>Loading...</div>;
@@ -48,7 +50,7 @@ const Dashboard = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">
-            Welcome back, {user?.username}! 👋
+            Welcome back, {user?.user_metadata?.full_name || user?.email?.split('@')[0]}! 👋
           </h1>
           <p className="text-xl text-muted-foreground">
             Continue your journey as a <span className="text-primary font-semibold">{profile.careerPath}</span>
@@ -106,7 +108,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Continue Learning Card */}
           <Card className="lg:col-span-2 bg-gradient-to-br from-primary/5 to-accent/10 border-primary/20">
             <CardHeader>
@@ -178,8 +180,14 @@ const Dashboard = () => {
           </Card>
         </div>
 
+        {/* Profile and Contact Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <ProfileEditor />
+          <ContactInfo />
+        </div>
+
         {/* Roadmap Preview */}
-        <Card className="mt-6">
+        <Card>
           <CardHeader>
             <CardTitle>Your Learning Roadmap</CardTitle>
             <CardDescription>
@@ -196,13 +204,14 @@ const Dashboard = () => {
                 return (
                   <div
                     key={key}
-                    className={`p-4 rounded-lg border-2 transition-all ${
+                    className={`p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
                       isCompleted
                         ? 'bg-green-500/10 border-green-500/30'
                         : isCurrent
                         ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20'
                         : 'bg-secondary/30 border-border'
                     }`}
+                    onClick={() => navigate('/roadmap', { state: { level: levelNum } })}
                   >
                     <div className="text-center">
                       <div

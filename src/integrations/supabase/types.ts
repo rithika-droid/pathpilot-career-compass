@@ -9,7 +9,119 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      certificates: {
+        Row: {
+          career_path: string
+          certificate_url: string | null
+          id: string
+          issued_at: string
+          level: number
+          user_id: string
+        }
+        Insert: {
+          career_path: string
+          certificate_url?: string | null
+          id?: string
+          issued_at?: string
+          level: number
+          user_id: string
+        }
+        Update: {
+          career_path?: string
+          certificate_url?: string | null
+          id?: string
+          issued_at?: string
+          level?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          answers: Json
+          completed_at: string
+          id: string
+          quiz_id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          completed_at?: string
+          id?: string
+          quiz_id: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          id?: string
+          quiz_id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          career_path: string
+          created_at: string
+          id: string
+          level: number
+          passing_score: number
+          questions: Json
+        }
+        Insert: {
+          career_path: string
+          created_at?: string
+          id?: string
+          level: number
+          passing_score?: number
+          questions: Json
+        }
+        Update: {
+          career_path?: string
+          created_at?: string
+          id?: string
+          level?: number
+          passing_score?: number
+          questions?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

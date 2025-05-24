@@ -16,10 +16,11 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 const UserProfile = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
   
-  const userInitials = user?.username ? user.username.substring(0, 2).toUpperCase() : 'U';
+  const displayName = profile?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userInitials = displayName.substring(0, 2).toUpperCase();
   
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -35,7 +36,7 @@ const UserProfile = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder.svg" />
+            <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} />
             <AvatarFallback className="bg-primary text-primary-foreground">
               {userInitials}
             </AvatarFallback>
@@ -45,7 +46,7 @@ const UserProfile = () => {
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.username}</p>
+            <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
           </div>
         </DropdownMenuLabel>

@@ -5,13 +5,13 @@ import { Navigate } from 'react-router-dom';
 import Landing from './Landing';
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
 
   if (!user) {
     return <Landing />;
   }
 
-  if (!user.profile?.careerPath) {
+  if (!userProfile?.careerPath) {
     return <Navigate to="/profile-setup" replace />;
   }
 
