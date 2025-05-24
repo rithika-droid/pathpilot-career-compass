@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -33,7 +32,6 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
   signup: (email: string, password: string, username: string) => Promise<void>;
   logout: () => void;
   updateProfile: (profile: UserProfile) => void;
@@ -266,21 +264,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithGoogle = async () => {
-    console.log('Attempting Google login');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`
-      }
-    });
-    
-    if (error) {
-      console.error('Google login error:', error);
-      throw new Error(error.message);
-    }
-  };
-
   const signup = async (email: string, password: string, username: string) => {
     console.log('Attempting signup for:', email);
     
@@ -366,7 +349,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     userProfile,
     loading,
     login,
-    loginWithGoogle,
     signup,
     logout,
     updateProfile,

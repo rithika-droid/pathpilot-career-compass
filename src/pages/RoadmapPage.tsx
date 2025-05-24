@@ -1,345 +1,378 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Lock, PlayCircle, Trophy, Target, BookOpen, Award } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, Award, BookOpen, Code, Lightbulb, Target, Trophy, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { careerPaths } from '../data/careerPaths';
-import { useNavigate } from 'react-router-dom';
-import QuizComponent from '../components/Quiz/QuizComponent';
-import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
+
+interface RoadmapStep {
+  id: string;
+  title: string;
+  description: string;
+  type: 'course' | 'project' | 'quiz' | 'milestone';
+  duration: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  completed: boolean;
+  locked: boolean;
+  skills: string[];
+  points: number;
+  certificateId?: string;
+}
 
 const RoadmapPage = () => {
   const { userProfile, updateProfile } = useAuth();
-  const navigate = useNavigate();
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizLevel, setQuizLevel] = useState(1);
-  const { toast } = useToast();
-  
-  if (!userProfile?.careerPath) {
-    return (
-      <MainLayout>
-        <div className="container pt-20 px-4 flex flex-col items-center justify-center min-h-screen">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Complete Your Profile</CardTitle>
-              <CardDescription>
-                Please complete your profile to view your personalized roadmap.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => navigate('/profile-setup')}>
-                Set Up Profile
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </MainLayout>
-    );
-  }
+  const [roadmapSteps, setRoadmapSteps] = useState<RoadmapStep[]>([]);
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
 
-  const careerPath = careerPaths[userProfile.careerPath];
-  const currentLevel = userProfile.level || 1;
-  
-  if (!careerPath) {
-    return (
-      <MainLayout>
-        <div className="container pt-20 px-4">
-          <h1 className="text-3xl font-bold mb-4">Career Roadmap</h1>
-          <p>Career path information not available.</p>
-        </div>
-      </MainLayout>
-    );
-  }
+  useEffect(() => {
+    // Load completed steps from localStorage
+    const saved = localStorage.getItem('pathpilot_completed_steps');
+    if (saved) {
+      setCompletedSteps(new Set(JSON.parse(saved)));
+    }
 
-  const handleQuizComplete = (score: number, passed: boolean) => {
-    if (passed && userProfile) {
-      const newLevel = Math.min(currentLevel + 1, careerPath.levels.length);
-      const newPoints = (userProfile.points || 0) + 100;
-      const newBadges = [...(userProfile.badges || [])];
-      
-      // Add achievement badge for completing level
-      const levelBadge = `Level ${currentLevel} Master`;
-      if (!newBadges.includes(levelBadge)) {
-        newBadges.push(levelBadge);
+    // Initialize roadmap based on user's career path
+    const careerPath = userProfile?.careerPath || 'Software Development';
+    initializeRoadmap(careerPath);
+  }, [userProfile]);
+
+  const initializeRoadmap = (careerPath: string) => {
+    const baseSteps: RoadmapStep[] = [
+      {
+        id: 'intro-programming',
+        title: 'Introduction to Programming',
+        description: 'Learn the fundamentals of programming concepts',
+        type: 'course',
+        duration: '2 weeks',
+        difficulty: 'Beginner',
+        completed: false,
+        locked: false,
+        skills: ['Programming Basics', 'Logic', 'Problem Solving'],
+        points: 100,
+        certificateId: 'cert-intro-programming'
+      },
+      {
+        id: 'first-project',
+        title: 'Build Your First Project',
+        description: 'Apply what you learned in a hands-on project',
+        type: 'project',
+        duration: '1 week',
+        difficulty: 'Beginner',
+        completed: false,
+        locked: true,
+        skills: ['Project Management', 'Implementation'],
+        points: 150,
+        certificateId: 'cert-first-project'
+      },
+      {
+        id: 'intermediate-concepts',
+        title: 'Intermediate Programming Concepts',
+        description: 'Dive deeper into advanced programming topics',
+        type: 'course',
+        duration: '3 weeks',
+        difficulty: 'Intermediate',
+        completed: false,
+        locked: true,
+        skills: ['Data Structures', 'Algorithms', 'OOP'],
+        points: 200
+      },
+      {
+        id: 'quiz-assessment',
+        title: 'Programming Assessment Quiz',
+        description: 'Test your knowledge with a comprehensive quiz',
+        type: 'quiz',
+        duration: '30 minutes',
+        difficulty: 'Intermediate',
+        completed: false,
+        locked: true,
+        skills: ['Assessment', 'Knowledge Verification'],
+        points: 75
+      },
+      {
+        id: 'capstone-project',
+        title: 'Capstone Project',
+        description: 'Build a comprehensive project showcasing your skills',
+        type: 'project',
+        duration: '4 weeks',
+        difficulty: 'Advanced',
+        completed: false,
+        locked: true,
+        skills: ['Full Stack Development', 'Project Leadership'],
+        points: 300,
+        certificateId: 'cert-capstone'
+      },
+      {
+        id: 'career-milestone',
+        title: 'Career Ready Milestone',
+        description: 'You are now ready for entry-level positions!',
+        type: 'milestone',
+        duration: 'Achievement',
+        difficulty: 'Advanced',
+        completed: false,
+        locked: true,
+        skills: ['Career Readiness', 'Professional Development'],
+        points: 500,
+        certificateId: 'cert-career-ready'
       }
+    ];
 
-      // Store certificate in localStorage
-      const certificates = JSON.parse(localStorage.getItem('pathpilot_certificates') || '[]');
-      const certificateId = `${userProfile.careerPath}-level-${currentLevel}`;
+    // Update locked status based on completed steps
+    const updatedSteps = baseSteps.map((step, index) => {
+      const isCompleted = completedSteps.has(step.id);
+      const shouldUnlock = index === 0 || 
+        baseSteps.slice(0, index).every(prevStep => completedSteps.has(prevStep.id));
       
-      if (!certificates.find((cert: any) => cert.id === certificateId)) {
-        const newCertificate = {
-          id: certificateId,
-          title: `Level ${currentLevel} Certificate`,
-          description: careerPath.levels[currentLevel - 1].title,
-          careerPath: userProfile.careerPath,
-          level: currentLevel,
-          issuedAt: new Date().toISOString(),
-          score: score
-        };
-        certificates.push(newCertificate);
-        localStorage.setItem('pathpilot_certificates', JSON.stringify(certificates));
-        
-        toast({
-          title: "🏅 Certificate earned!",
-          description: `Certificate added to your profile for completing Level ${currentLevel}!`,
-        });
-      }
+      return {
+        ...step,
+        completed: isCompleted,
+        locked: !shouldUnlock
+      };
+    });
 
-      updateProfile({
+    setRoadmapSteps(updatedSteps);
+  };
+
+  const completeStep = (stepId: string) => {
+    const newCompleted = new Set(completedSteps);
+    newCompleted.add(stepId);
+    setCompletedSteps(newCompleted);
+    
+    // Save to localStorage
+    localStorage.setItem('pathpilot_completed_steps', JSON.stringify([...newCompleted]));
+    
+    // Update roadmap to unlock next steps
+    const updatedSteps = roadmapSteps.map((step, index) => {
+      if (step.id === stepId) {
+        return { ...step, completed: true };
+      }
+      
+      // Check if this step should be unlocked
+      const shouldUnlock = index === 0 || 
+        roadmapSteps.slice(0, index).every(prevStep => 
+          newCompleted.has(prevStep.id) || prevStep.id === stepId
+        );
+      
+      return { ...step, locked: !shouldUnlock };
+    });
+    
+    setRoadmapSteps(updatedSteps);
+    
+    // Find the completed step and award points
+    const completedStep = roadmapSteps.find(step => step.id === stepId);
+    if (completedStep && userProfile) {
+      const currentPoints = userProfile.points || 0;
+      const updatedProfile = {
         ...userProfile,
-        level: newLevel,
-        points: newPoints,
-        badges: newBadges
-      });
-
+        points: currentPoints + completedStep.points
+      };
+      updateProfile(updatedProfile);
+      
+      // Generate certificate if applicable
+      if (completedStep.certificateId) {
+        generateCertificate(completedStep);
+      }
+      
       toast({
-        title: "🎉 Level completed!",
-        description: `You've earned 100 points and unlocked Level ${newLevel}!`,
-      });
-    } else {
-      toast({
-        title: "Keep trying!",
-        description: "You need 70% to pass. Review the material and try again!",
-        variant: "destructive",
+        title: "🎉 Step Completed!",
+        description: `You earned ${completedStep.points} points!`,
       });
     }
-    setShowQuiz(false);
   };
 
-  const startQuiz = (level: number) => {
-    setQuizLevel(level);
-    setShowQuiz(true);
+  const generateCertificate = (step: RoadmapStep) => {
+    if (!step.certificateId) return;
+    
+    const certificate = {
+      id: step.certificateId,
+      title: `Certificate of Completion - ${step.title}`,
+      description: `Successfully completed ${step.title}`,
+      issueDate: new Date().toISOString(),
+      type: step.type,
+      skills: step.skills
+    };
+    
+    // Save certificate to localStorage
+    const existingCerts = JSON.parse(localStorage.getItem('pathpilot_certificates') || '[]');
+    const updatedCerts = [...existingCerts, certificate];
+    localStorage.setItem('pathpilot_certificates', JSON.stringify(updatedCerts));
+    
+    toast({
+      title: "🏅 Certificate Earned!",
+      description: `Certificate added to your profile!`,
+    });
   };
 
-  if (showQuiz) {
-    return (
-      <MainLayout>
-        <div className="container mx-auto px-4 pt-20 pb-16 max-w-4xl">
-          <div className="mb-6">
-            <Button variant="outline" onClick={() => setShowQuiz(false)}>
-              ← Back to Roadmap
-            </Button>
-          </div>
-          <QuizComponent
-            careerPath={userProfile.careerPath}
-            level={quizLevel}
-            onComplete={handleQuizComplete}
-          />
-        </div>
-      </MainLayout>
-    );
-  }
+  const getStepIcon = (type: string, completed: boolean) => {
+    const iconProps = { className: `h-6 w-6 ${completed ? 'text-green-500' : 'text-muted-foreground'}` };
+    
+    switch (type) {
+      case 'course':
+        return <BookOpen {...iconProps} />;
+      case 'project':
+        return <Code {...iconProps} />;
+      case 'quiz':
+        return <Lightbulb {...iconProps} />;
+      case 'milestone':
+        return <Trophy {...iconProps} />;
+      default:
+        return <Target {...iconProps} />;
+    }
+  };
 
-  const completedLevels = currentLevel - 1;
-  const totalLevels = careerPath.levels.length;
-  const progressPercentage = (completedLevels / totalLevels) * 100;
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Beginner':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'Intermediate':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'Advanced':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    }
+  };
+
+  const calculateProgress = () => {
+    if (roadmapSteps.length === 0) return 0;
+    return (completedSteps.size / roadmapSteps.length) * 100;
+  };
+
+  const totalPoints = roadmapSteps
+    .filter(step => completedSteps.has(step.id))
+    .reduce((sum, step) => sum + step.points, 0);
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 pt-20 pb-16">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Your {careerPath.title} Roadmap</h1>
-          <p className="text-muted-foreground text-lg mb-6">
-            Follow this structured path to advance your career step by step
+          <h1 className="text-4xl font-bold mb-4">Your Learning Roadmap</h1>
+          <p className="text-lg text-muted-foreground mb-6">
+            Follow this personalized path to achieve your career goals
           </p>
           
-          <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
+          {/* Progress Overview */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-yellow-500" />
+                Progress Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 <div>
-                  <h3 className="text-xl font-semibold">Progress Overview</h3>
-                  <p className="text-muted-foreground">Level {currentLevel} of {totalLevels}</p>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>Overall Progress</span>
+                    <span>{Math.round(calculateProgress())}%</span>
+                  </div>
+                  <Progress value={calculateProgress()} className="h-2" />
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold">{Math.round(progressPercentage)}%</div>
-                  <p className="text-sm text-muted-foreground">Complete</p>
-                </div>
-              </div>
-              <Progress value={progressPercentage} className="h-3" />
-              <div className="flex items-center gap-4 mt-4 text-sm">
-                <div className="flex items-center gap-1">
-                  <Trophy className="h-4 w-4 text-yellow-500" />
-                  <span>{userProfile.points || 0} points</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Target className="h-4 w-4 text-blue-500" />
-                  <span>{completedLevels} levels completed</span>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-primary">{completedSteps.size}</div>
+                    <div className="text-sm text-muted-foreground">Completed</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-orange-500">{roadmapSteps.length - completedSteps.size}</div>
+                    <div className="text-sm text-muted-foreground">Remaining</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-500">{totalPoints}</div>
+                    <div className="text-sm text-muted-foreground">Points Earned</div>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Roadmap Steps */}
         <div className="space-y-6">
-          {careerPath.levels.map((level, index) => {
-            const levelNumber = index + 1;
-            const isCompleted = levelNumber < currentLevel;
-            const isCurrent = levelNumber === currentLevel;
-            const isLocked = levelNumber > currentLevel;
-            
-            return (
-              <Card 
-                key={index} 
-                className={`${
-                  isCompleted 
-                    ? 'border-green-500 bg-green-50/50 dark:bg-green-950/20' 
-                    : isCurrent 
-                    ? 'border-primary bg-primary/5' 
-                    : 'opacity-60'
-                }`}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-full ${
-                        isCompleted 
-                          ? 'bg-green-500 text-white' 
-                          : isCurrent 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {isCompleted ? (
-                          <CheckCircle className="h-6 w-6" />
-                        ) : isLocked ? (
-                          <Lock className="h-6 w-6" />
-                        ) : (
-                          <PlayCircle className="h-6 w-6" />
-                        )}
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl">Level {levelNumber}: {level.title}</CardTitle>
-                        <CardDescription className="mt-1">
-                          Duration: {level.duration || '3-4 months'}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={isCompleted ? "default" : isCurrent ? "secondary" : "outline"}>
-                        {isCompleted ? "Completed" : isCurrent ? "Current" : "Locked"}
-                      </Badge>
-                      {isCompleted && (
-                        <Award className="h-5 w-5 text-yellow-500" title="Certificate Available" />
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-2 flex items-center gap-2">
-                        <BookOpen className="h-4 w-4" />
-                        Courses & Learning Resources
-                      </h4>
-                      <div className="space-y-2">
-                        {level.courses.map((course, courseIndex) => (
-                          <div key={courseIndex} className="flex items-center gap-2">
-                            <div className="h-1.5 w-1.5 bg-primary rounded-full" />
-                            <a 
-                              href={course.link} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:text-blue-800 underline"
-                            >
-                              {course.name}
-                            </a>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {level.projects && level.projects.length > 0 && (
-                      <div>
-                        <h4 className="font-semibold mb-2">Recommended Projects</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {level.projects.map((project, projectIndex) => (
-                            <Badge key={projectIndex} variant="outline" className="text-xs">
-                              {project}
-                            </Badge>
-                          ))}
+          {roadmapSteps.map((step, index) => (
+            <Card 
+              key={step.id} 
+              className={`transition-all duration-300 ${
+                step.completed 
+                  ? 'border-green-500 bg-green-50 dark:bg-green-950/20' 
+                  : step.locked 
+                    ? 'opacity-60 bg-muted/50' 
+                    : 'hover:shadow-lg'
+              }`}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      {step.completed ? (
+                        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                          <CheckCircle className="h-6 w-6 text-white" />
                         </div>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="font-semibold mb-2 text-sm">Internship Opportunities</h4>
-                        <ul className="text-xs text-muted-foreground space-y-1">
-                          {level.internships.slice(0, 2).map((internship, internIndex) => (
-                            <li key={internIndex} className="flex items-center gap-2">
-                              <div className="h-1 w-1 bg-primary rounded-full" />
-                              <a 
-                                href={internship} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 underline"
-                              >
-                                View Opportunities
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold mb-2 text-sm">Job Platforms</h4>
-                        <ul className="text-xs text-muted-foreground space-y-1">
-                          {level.jobs.slice(0, 2).map((job, jobIndex) => (
-                            <li key={jobIndex} className="flex items-center gap-2">
-                              <div className="h-1 w-1 bg-primary rounded-full" />
-                              <a 
-                                href={job} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 underline"
-                              >
-                                Explore Jobs
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold mb-2 text-sm">Master's Program Guidance</h4>
-                      <p className="text-xs text-muted-foreground">{level.masters}</p>
-                    </div>
-
-                    <div className="flex gap-2 pt-2">
-                      {isCurrent && (
-                        <Button onClick={() => startQuiz(levelNumber)}>
-                          Take Level {levelNumber} Quiz
-                        </Button>
+                      ) : (
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          step.locked ? 'bg-muted' : 'bg-primary/10'
+                        }`}>
+                          {getStepIcon(step.type, step.completed)}
+                        </div>
                       )}
-                      <Button variant="outline" size="sm" disabled={isLocked}>
-                        View Details
-                      </Button>
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{step.title}</CardTitle>
+                      <CardDescription>{step.description}</CardDescription>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                  <div className="flex items-center gap-2">
+                    {step.certificateId && (
+                      <Award className="h-5 w-5 text-yellow-500" />
+                    )}
+                    <Badge className={getDifficultyColor(step.difficulty)}>
+                      {step.difficulty}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>Duration: {step.duration}</span>
+                    <span>Points: {step.points}</span>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-1">
+                    {step.skills.map((skill) => (
+                      <Badge key={skill} variant="outline" className="text-xs">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => completeStep(step.id)}
+                      disabled={step.locked || step.completed}
+                      className="flex-1"
+                      variant={step.completed ? "outline" : "default"}
+                    >
+                      {step.completed ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Completed
+                        </>
+                      ) : step.locked ? (
+                        'Locked'
+                      ) : (
+                        'Start Step'
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-
-        {currentLevel > totalLevels && (
-          <Card className="mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-200">
-            <CardContent className="p-6 text-center">
-              <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">Congratulations!</h3>
-              <p className="text-muted-foreground">
-                You've completed the entire {careerPath.title} roadmap! 
-                Continue building your skills and exploring advanced topics.
-              </p>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </MainLayout>
   );
