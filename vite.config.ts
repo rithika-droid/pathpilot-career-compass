@@ -13,10 +13,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' &&
-    componentTagger({
-      // Hide the Lovable badge
-      hideBadge: true
-    }),
+    componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {

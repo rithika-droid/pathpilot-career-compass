@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,7 +41,7 @@ const Dashboard = () => {
   const progressPercentage = totalCourses > 0 ? (completedCourses / totalCourses) * 100 : 0;
   
   const handleContinueLearning = () => {
-    navigate('/courses', { state: { level: currentLevel } });
+    navigate('/courses', { state: { level: 1 } });
   };
 
   return (

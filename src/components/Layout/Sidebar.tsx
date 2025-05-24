@@ -1,12 +1,15 @@
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { UserCircle, LayoutDashboard, Route, GraduationCap, Award, Trophy, Settings, HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { UserCircle, LayoutDashboard, Route, GraduationCap, Award, Trophy, Settings, HelpCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
 }
+
 const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   toggleSidebar
@@ -44,38 +47,72 @@ const Sidebar: React.FC<SidebarProps> = ({
     path: '/help',
     icon: <HelpCircle className="h-5 w-5" />
   }];
-  return <aside className={cn("bg-card/95 backdrop-blur-md h-screen fixed left-0 top-0 z-30 border-r border-border flex flex-col transition-all duration-300 ease-in-out pt-16", isOpen ? "w-64" : "w-0 md:w-16 overflow-hidden")}>
-      <div className="flex justify-end p-2 absolute top-2 right-2">
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-7 w-7 md:hidden">
-          <ChevronLeft className={cn("h-5 w-5", !isOpen && "rotate-180")} />
-        </Button>
-      </div>
+
+  return (
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300"
+          onClick={toggleSidebar}
+        />
+      )}
       
-      <div className="hidden md:flex justify-end p-2 absolute top-2 right-2">
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-7 w-7">
-          {isOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-        </Button>
-      </div>
+      {/* Sidebar */}
+      <aside className={cn(
+        "bg-card/95 backdrop-blur-md h-screen fixed left-0 top-0 z-50 border-r border-border flex flex-col transition-all duration-300 ease-out transform",
+        isOpen 
+          ? "translate-x-0 w-64" 
+          : "-translate-x-full w-64 md:translate-x-0 md:w-0 md:overflow-hidden"
+      )}>
+        {/* Close button for mobile */}
+        <div className="flex justify-end p-4 md:hidden">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleSidebar}
+            className="h-8 w-8 hover:bg-secondary/80"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
 
-      <nav className="flex-1 overflow-y-auto p-3 py-[12px] px-[10px] mx-0 my-[10px] rounded-none bg-transparent">
-        <ul className="space-y-1">
-          {navItems.map(item => <li key={item.name}>
-              <NavLink to={item.path} className={({
-            isActive
-          }) => cn("flex items-center p-2 rounded-md transition-colors", isActive ? "bg-primary text-primary-foreground" : "hover:bg-primary/10", !isOpen && "justify-center")}>
-                <span className="shrink-0">{item.icon}</span>
-                {isOpen && <span className="ml-3">{item.name}</span>}
-              </NavLink>
-            </li>)}
-        </ul>
-      </nav>
+        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+          <ul className="space-y-1">
+            {navItems.map(item => (
+              <li key={item.name}>
+                <NavLink 
+                  to={item.path} 
+                  className={({ isActive }) => cn(
+                    "flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-secondary/80",
+                    isActive 
+                      ? "bg-primary text-primary-foreground shadow-md" 
+                      : "hover:bg-primary/10 hover:translate-x-1"
+                  )}
+                  onClick={() => {
+                    // Close sidebar on mobile after navigation
+                    if (window.innerWidth < 768) {
+                      toggleSidebar();
+                    }
+                  }}
+                >
+                  <span className="shrink-0">{item.icon}</span>
+                  <span className="ml-3 font-medium">{item.name}</span>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-      <div className="p-4">
-        {isOpen && <div className="text-sm text-muted-foreground">
-            <p>PathPilot v1.0</p>
-            <p>© 2025 PathPilot</p>
-          </div>}
-      </div>
-    </aside>;
+        <div className="p-4 border-t border-border/50">
+          <div className="text-sm text-muted-foreground text-center">
+            <p className="font-medium">PathPilot v1.0</p>
+            <p className="text-xs mt-1">© 2025 PathPilot</p>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
 };
+
 export default Sidebar;

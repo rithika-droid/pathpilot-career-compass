@@ -11,7 +11,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, onShowAuth }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Changed to false by default
   const { user } = useAuth();
 
   const toggleSidebar = () => {

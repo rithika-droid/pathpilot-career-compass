@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from './ThemeProvider';
-import { Moon, Sun, Search, Menu } from 'lucide-react';
+import { Moon, Sun, Search, Menu, Compass } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import Notifications from './Notifications/Notifications';
 import UserProfile from './UserProfile/UserProfile';
@@ -27,15 +27,21 @@ const Navbar = ({ onShowAuth, toggleSidebar }: NavbarProps) => {
               variant="ghost" 
               size="icon" 
               onClick={toggleSidebar} 
-              className="md:hidden h-9 w-9"
+              className="h-9 w-9 hover:bg-secondary/80 transition-colors duration-200"
+              title="Toggle Menu"
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-5 w-5" />
             </Button>
           )}
           
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            PathPilot
-          </h1>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full">
+              <Compass className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              PathPilot
+            </h1>
+          </div>
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-4">
