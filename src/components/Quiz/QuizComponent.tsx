@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '../../hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface Question {
   question: string;
@@ -15,62 +16,46 @@ interface Question {
   correct: number;
 }
 
-interface Quiz {
-  id: string;
-  level: number;
-  career_path: string;
-  questions: Question[];
-  passing_score: number;
-}
-
 interface QuizComponentProps {
-  level: number;
   careerPath: string;
-  onComplete: (passed: boolean, score: number) => void;
+  level: number;
+  onComplete: (score: number, passed: boolean) => void;
 }
 
-const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComplete }) => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
+const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComplete }) => {
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
-    loadQuiz();
-  }, [level, careerPath]);
+    fetchQuiz();
+  }, [careerPath, level]);
 
-  const loadQuiz = async () => {
+  const fetchQuiz = async () => {
     try {
       const { data, error } = await supabase
         .from('quizzes')
         .select('*')
-        .eq('level', level)
         .eq('career_path', careerPath)
+        .eq('level', level)
         .single();
 
       if (error) throw error;
 
-      if (data) {
-        // Parse the JSON questions properly
-        const parsedQuestions = Array.isArray(data.questions) 
-          ? data.questions as Question[]
-          : JSON.parse(data.questions as string) as Question[];
-        
-        const quizData: Quiz = {
-          ...data,
-          questions: parsedQuestions
-        };
-        
-        setQuiz(quizData);
-        setAnswers(new Array(parsedQuestions.length).fill(-1));
+      if (data && data.questions) {
+        // Type assertion with proper validation
+        const parsedQuestions = data.questions as unknown;
+        if (Array.isArray(parsedQuestions)) {
+          setQuestions(parsedQuestions as Question[]);
+        }
       }
     } catch (error) {
-      console.error('Error loading quiz:', error);
+      console.error('Error fetching quiz:', error);
       toast({
         title: "Error",
         description: "Failed to load quiz. Please try again.",
@@ -82,72 +67,57 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
   };
 
   const handleAnswerSelect = (answerIndex: number) => {
-    setSelectedAnswer(answerIndex);
+    const newAnswers = [...selectedAnswers];
+    newAnswers[currentQuestion] = answerIndex;
+    setSelectedAnswers(newAnswers);
   };
 
-  const handleNextQuestion = () => {
-    if (selectedAnswer === null || !quiz) return;
-
-    const newAnswers = [...answers];
-    newAnswers[currentQuestion] = selectedAnswer;
-    setAnswers(newAnswers);
-
-    if (currentQuestion < quiz.questions.length - 1) {
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
-      setSelectedAnswer(newAnswers[currentQuestion + 1] === -1 ? null : newAnswers[currentQuestion + 1]);
     } else {
-      calculateResults(newAnswers);
+      calculateResults();
     }
   };
 
-  const handlePreviousQuestion = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-      setSelectedAnswer(answers[currentQuestion - 1] === -1 ? null : answers[currentQuestion - 1]);
-    }
-  };
-
-  const calculateResults = async (finalAnswers: number[]) => {
-    if (!quiz || !user) return;
-
+  const calculateResults = async () => {
     let correctAnswers = 0;
-    finalAnswers.forEach((answer, index) => {
-      if (answer === quiz.questions[index].correct) {
+    questions.forEach((question, index) => {
+      if (selectedAnswers[index] === question.correct) {
         correctAnswers++;
       }
     });
 
-    const finalScore = Math.round((correctAnswers / quiz.questions.length) * 100);
+    const finalScore = Math.round((correctAnswers / questions.length) * 100);
     setScore(finalScore);
     setShowResults(true);
 
+    const passed = finalScore >= 70;
+
     // Save quiz attempt
-    try {
-      await supabase.from('quiz_attempts').insert({
-        user_id: user.id,
-        quiz_id: quiz.id,
-        score: finalScore,
-        answers: finalAnswers
-      });
+    if (user) {
+      try {
+        const { data: quizData } = await supabase
+          .from('quizzes')
+          .select('id')
+          .eq('career_path', careerPath)
+          .eq('level', level)
+          .single();
 
-      const passed = finalScore >= quiz.passing_score;
-      onComplete(passed, finalScore);
-
-      if (passed) {
-        toast({
-          title: "Congratulations!",
-          description: `You passed with ${finalScore}%!`,
-        });
-      } else {
-        toast({
-          title: "Try Again",
-          description: `You scored ${finalScore}%. You need ${quiz.passing_score}% to pass.`,
-          variant: "destructive",
-        });
+        if (quizData) {
+          await supabase.from('quiz_attempts').insert({
+            user_id: user.id,
+            quiz_id: quizData.id,
+            score: finalScore,
+            answers: selectedAnswers,
+          });
+        }
+      } catch (error) {
+        console.error('Error saving quiz attempt:', error);
       }
-    } catch (error) {
-      console.error('Error saving quiz attempt:', error);
     }
+
+    onComplete(finalScore, passed);
   };
 
   if (loading) {
@@ -160,7 +130,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
     );
   }
 
-  if (!quiz) {
+  if (questions.length === 0) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -171,7 +141,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
   }
 
   if (showResults) {
-    const passed = score >= quiz.passing_score;
+    const passed = score >= 70;
     return (
       <Card>
         <CardHeader>
@@ -188,10 +158,10 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
           <div className="text-center space-y-4">
             <div className="text-4xl font-bold">{score}%</div>
             <div className={`text-lg ${passed ? 'text-green-600' : 'text-red-600'}`}>
-              {passed ? 'Congratulations! You passed!' : `You need ${quiz.passing_score}% to pass. Try again!`}
+              {passed ? 'Congratulations! You passed!' : 'Keep studying and try again!'}
             </div>
             <div className="text-sm text-muted-foreground">
-              You got {Math.round((score / 100) * quiz.questions.length)} out of {quiz.questions.length} questions correct.
+              You need 70% to pass this level.
             </div>
           </div>
         </CardContent>
@@ -199,21 +169,26 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
     );
   }
 
-  const currentQ = quiz.questions[currentQuestion];
+  const currentQ = questions[currentQuestion];
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Level {level} Quiz</CardTitle>
         <CardDescription>
-          Question {currentQuestion + 1} of {quiz.questions.length}
+          Question {currentQuestion + 1} of {questions.length}
         </CardDescription>
+        <Progress value={progress} className="w-full" />
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">{currentQ.question}</h3>
+        <div>
+          <h3 className="text-lg font-semibold mb-4">{currentQ.question}</h3>
           
-          <RadioGroup value={selectedAnswer?.toString()} onValueChange={(value) => handleAnswerSelect(parseInt(value))}>
+          <RadioGroup
+            value={selectedAnswers[currentQuestion]?.toString()}
+            onValueChange={(value) => handleAnswerSelect(parseInt(value))}
+          >
             {currentQ.options.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <RadioGroupItem value={index.toString()} id={`option-${index}`} />
@@ -228,17 +203,16 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
         <div className="flex justify-between">
           <Button
             variant="outline"
-            onClick={handlePreviousQuestion}
+            onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
             disabled={currentQuestion === 0}
           >
             Previous
           </Button>
-          
           <Button
-            onClick={handleNextQuestion}
-            disabled={selectedAnswer === null}
+            onClick={handleNext}
+            disabled={selectedAnswers[currentQuestion] === undefined}
           >
-            {currentQuestion === quiz.questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+            {currentQuestion === questions.length - 1 ? 'Finish Quiz' : 'Next'}
           </Button>
         </div>
       </CardContent>
