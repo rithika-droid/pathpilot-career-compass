@@ -11,8 +11,7 @@ import {
   Trophy, 
   Settings, 
   HelpCircle,
-  ChevronLeft,
-  ChevronRight
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -38,61 +37,52 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   return (
     <aside 
       className={cn(
-        "bg-card/95 backdrop-blur-md h-screen fixed left-0 top-0 z-30 border-r border-border flex flex-col transition-all duration-300 ease-in-out pt-16",
-        isOpen ? "w-64" : "w-0 md:w-16 overflow-hidden"
+        "fixed left-0 top-0 z-30 h-screen w-64 bg-card/95 backdrop-blur-md border-r border-border flex flex-col pt-16 transition-transform duration-300 ease-in-out",
+        isOpen ? "translate-x-0" : "-translate-x-full"
       )}
     >
-      <div className="flex justify-end p-2 absolute top-2 right-2">
+      {/* Close button for mobile */}
+      <div className="flex justify-end p-4 md:hidden">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={toggleSidebar}
-          className="h-7 w-7 md:hidden"
+          className="h-8 w-8"
         >
-          <ChevronLeft className={cn("h-5 w-5", !isOpen && "rotate-180")} />
+          <X className="h-5 w-5" />
         </Button>
       </div>
       
-      <div className="hidden md:flex justify-end p-2 absolute top-2 right-2">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleSidebar}
-          className="h-7 w-7"
-        >
-          {isOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-        </Button>
-      </div>
-
-      <nav className="flex-1 overflow-y-auto p-3">
-        <ul className="space-y-1">
+      <nav className="flex-1 overflow-y-auto p-4">
+        <ul className="space-y-2">
           {navItems.map((item) => (
             <li key={item.name}>
               <NavLink
                 to={item.path}
+                onClick={() => window.innerWidth < 768 && toggleSidebar()} // Close on mobile after click
                 className={({ isActive }) => cn(
-                  "flex items-center p-2 rounded-md transition-colors",
+                  "flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-primary/10 group",
                   isActive 
-                    ? "bg-primary text-primary-foreground" 
-                    : "hover:bg-primary/10",
-                  !isOpen && "justify-center"
+                    ? "bg-primary text-primary-foreground shadow-md" 
+                    : "hover:bg-primary/10 hover:translate-x-1"
                 )}
               >
-                <span className="shrink-0">{item.icon}</span>
-                {isOpen && <span className="ml-3">{item.name}</span>}
+                <span className="shrink-0 transition-transform duration-200 group-hover:scale-110">
+                  {item.icon}
+                </span>
+                <span className="ml-3 font-medium">{item.name}</span>
               </NavLink>
             </li>
           ))}
         </ul>
       </nav>
 
-      <div className="p-4">
-        {isOpen && (
-          <div className="text-sm text-muted-foreground">
-            <p>PathPilot v1.0</p>
-            <p>© 2025 PathPilot</p>
-          </div>
-        )}
+      <div className="p-4 border-t border-border/50">
+        <div className="text-sm text-muted-foreground space-y-1">
+          <p className="font-semibold text-primary">PathPilot v1.0</p>
+          <p>© 2025 PathPilot</p>
+          <p className="text-xs">Your career companion</p>
+        </div>
       </div>
     </aside>
   );

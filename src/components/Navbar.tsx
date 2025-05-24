@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from './ThemeProvider';
-import { Moon, Sun, Search, Menu } from 'lucide-react';
+import { Moon, Sun, Search, Menu, Compass } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import Notifications from './Notifications/Notifications';
 import UserProfile from './UserProfile/UserProfile';
@@ -11,9 +11,10 @@ import { useIsMobile } from '../hooks/use-mobile';
 interface NavbarProps {
   onShowAuth?: (show: boolean, mode: 'login' | 'signup') => void;
   toggleSidebar?: () => void;
+  showMenuButton?: boolean;
 }
 
-const Navbar = ({ onShowAuth, toggleSidebar }: NavbarProps) => {
+const Navbar = ({ onShowAuth, toggleSidebar, showMenuButton = false }: NavbarProps) => {
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
@@ -22,20 +23,23 @@ const Navbar = ({ onShowAuth, toggleSidebar }: NavbarProps) => {
     <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          {user && (
+          {showMenuButton && (
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={toggleSidebar} 
-              className="md:hidden h-9 w-9"
+              className="h-9 w-9 hover:bg-primary/10 transition-colors duration-200"
             >
               <Menu className="h-4 w-4" />
             </Button>
           )}
           
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            PathPilot
-          </h1>
+          <div className="flex items-center space-x-2">
+            <Compass className="h-6 w-6 text-primary animate-pulse" />
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              PathPilot
+            </h1>
+          </div>
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-4">
