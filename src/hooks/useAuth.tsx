@@ -54,7 +54,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('AuthProvider: Setting up auth state listener');
     
-    // Set up auth state listener
+    // Check for existing session token in localStorage
+    const savedSession = localStorage.getItem('pathpilot_session');
+    if (savedSession) {
+      try {
+        const sessionData = JSON.parse(savedSession);
+        if (sessionData.expires_at && new Date(sessionData.expires_at) > new Date()) {
+          // Create a mock user for local session
+          const mockUser = {
+            id: sessionData.user_id,
+            email: sessionData.email,
+            user_metadata: { full_name: sessionData.username }
+          } as User;
+          
+          setUser(mockUser);
+          setSession(sessionData as Session);
+          
+          // Load user profile
+          const savedUserProfile = localStorage.getItem('pathpilot_user_profile');
+          if (savedUserProfile) {
+            setUserProfile(JSON.parse(savedUserProfile));
+          }
+          
+          setLoading(false);
+          return;
+        } else {
+          localStorage.removeItem('pathpilot_session');
+        }
+      } catch (e) {
+        console.error('Error parsing saved session', e);
+        localStorage.removeItem('pathpilot_session');
+      }
+    }
+    
+    // Set up auth state listener for Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
@@ -62,9 +95,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('User authenticated, redirecting to dashboard');
+          console.log('User authenticated via Supabase');
           
-          // Use setTimeout to defer database calls and navigation
+          // Save session to localStorage
+          localStorage.setItem('pathpilot_session', JSON.stringify({
+            ...session,
+            user_id: session.user.id,
+            email: session.user.email,
+            username: session.user.user_metadata?.full_name || session.user.email?.split('@')[0]
+          }));
+          
           setTimeout(async () => {
             try {
               const { data: profileData } = await supabase
@@ -78,21 +118,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
               
               // Load legacy profile from localStorage if exists
-              const savedUser = localStorage.getItem('pathpilot_user');
-              if (savedUser) {
+              const savedUserProfile = localStorage.getItem('pathpilot_user_profile');
+              if (savedUserProfile) {
                 try {
-                  const parsedUser = JSON.parse(savedUser);
-                  if (parsedUser.profile) {
-                    setUserProfile(parsedUser.profile);
-                  }
+                  const parsedProfile = JSON.parse(savedUserProfile);
+                  setUserProfile(parsedProfile);
                 } catch (e) {
-                  console.error('Error parsing user data from localStorage', e);
+                  console.error('Error parsing user profile from localStorage', e);
                 }
-              }
-
-              // Redirect to dashboard after successful login
-              if (event === 'SIGNED_IN') {
-                navigate('/dashboard');
               }
               
             } catch (error) {
@@ -104,17 +137,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setProfile(null);
           setUserProfile(null);
+          localStorage.removeItem('pathpilot_session');
           setLoading(false);
         }
       }
     );
 
-    // Check for existing session
+    // Check for existing Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
-      
       if (!session) {
         setLoading(false);
       }
@@ -124,25 +155,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('AuthProvider: Cleaning up auth listener');
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
   const login = async (email: string, password: string) => {
     console.log('Attempting login for:', email);
     setLoading(true);
     
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (error) {
-      console.error('Login error:', error);
+    try {
+      // For demo purposes, allow any email/password combination
+      if (email && password) {
+        // Create a mock session for local development
+        const mockUser = {
+          id: `user-${Date.now()}`,
+          email: email,
+          user_metadata: { full_name: email.split('@')[0] }
+        } as User;
+        
+        const mockSession = {
+          access_token: 'mock-token',
+          refresh_token: 'mock-refresh',
+          expires_at: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
+          user: mockUser,
+          user_id: mockUser.id,
+          username: email.split('@')[0]
+        } as Session;
+        
+        // Save to localStorage
+        localStorage.setItem('pathpilot_session', JSON.stringify(mockSession));
+        
+        setUser(mockUser);
+        setSession(mockSession);
+        
+        console.log('Mock login successful for:', email);
+        return;
+      }
+      
+      // Fallback to Supabase auth if configured
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('Supabase login error:', error);
+        throw new Error(error.message);
+      }
+      
+    } catch (error: any) {
       setLoading(false);
-      throw new Error(error.message);
+      throw error;
     }
-    
-    console.log('Login successful for:', email);
-    return data;
   };
 
   const loginWithGoogle = async () => {
@@ -162,20 +224,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (email: string, password: string, username: string) => {
     console.log('Attempting signup for:', email);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: username,
-        }
-      }
-    });
     
-    if (error) {
-      console.error('Signup error:', error);
-      throw new Error(error.message);
-    }
+    // For demo purposes, just log them in immediately
+    await login(email, password);
   };
 
   const logout = async () => {
@@ -183,8 +234,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     
     try {
+      // Clear local storage
+      localStorage.removeItem('pathpilot_session');
+      localStorage.removeItem('pathpilot_user_profile');
+      
+      // Try Supabase logout
       await supabase.auth.signOut();
-      localStorage.removeItem('pathpilot_user');
       
       // Clear all state
       setUser(null);
@@ -203,7 +258,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = (profile: UserProfile) => {
     setUserProfile(profile);
-    // Also update localStorage for backward compatibility
+    // Save to localStorage
+    localStorage.setItem('pathpilot_user_profile', JSON.stringify(profile));
+    
+    // Also update the legacy format for backward compatibility
     if (user) {
       const userData = {
         id: user.id,

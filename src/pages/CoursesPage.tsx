@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { useAuth } from '../hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Search, Filter, CheckCircle, Clock } from 'lucide-react';
+import { Search, Filter, Award } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { 
   Select, 
@@ -16,6 +17,8 @@ import {
 import { careerPaths } from '../data/careerPaths';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Progress } from '@/components/ui/progress';
+import CourseCard from '../components/Courses/CourseCard';
+import { courseProgressService } from '../services/courseProgress';
 
 const CoursesPage = () => {
   const { userProfile } = useAuth();
@@ -24,6 +27,7 @@ const CoursesPage = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState('all');
+  const [completedCourses, setCompletedCourses] = useState(0);
   
   // Check if we have a specific level to filter by from navigation state
   useEffect(() => {
@@ -31,6 +35,20 @@ const CoursesPage = () => {
       setLevelFilter(location.state.level.toString());
     }
   }, [location.state]);
+
+  // Update completed courses count when progress changes
+  useEffect(() => {
+    const updateCompletedCount = () => {
+      setCompletedCourses(courseProgressService.getCompletedCourses().length);
+    };
+
+    updateCompletedCount();
+    window.addEventListener('courseProgressUpdated', updateCompletedCount);
+    
+    return () => {
+      window.removeEventListener('courseProgressUpdated', updateCompletedCount);
+    };
+  }, []);
   
   if (!userProfile?.careerPath) {
     return (
@@ -70,12 +88,13 @@ const CoursesPage = () => {
 
   // Collect all courses from all levels
   const allCourses = careerPath.levels.flatMap((level, levelIndex) => 
-    level.courses.map(course => ({
+    level.courses.map((course, courseIndex) => ({
       ...course,
       levelNumber: levelIndex + 1,
       levelTitle: level.title,
       isCompleted: levelIndex + 1 < currentLevel,
-      isCurrentLevel: levelIndex + 1 === currentLevel
+      isCurrentLevel: levelIndex + 1 === currentLevel,
+      courseIndex
     }))
   );
   
@@ -97,6 +116,8 @@ const CoursesPage = () => {
     );
   }
 
+  const completionStats = courseProgressService.getCompletionStats(allCourses.length);
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 pt-20 pb-16">
@@ -112,8 +133,9 @@ const CoursesPage = () => {
             <Badge variant="outline" className="bg-primary/10 text-primary">
               Level {currentLevel}
             </Badge>
-            <Badge variant="outline">
-              {filteredCourses.filter(c => c.isCompleted).length}/{allCourses.length} Completed
+            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+              <Award className="h-3 w-3 mr-1" />
+              {completionStats.completed} Completed
             </Badge>
           </div>
         </div>
@@ -157,13 +179,21 @@ const CoursesPage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Overall Progress</span>
+                <span className="text-sm text-muted-foreground">
+                  {completionStats.completed}/{allCourses.length} courses completed
+                </span>
+              </div>
+              <Progress value={completionStats.percentage} className="h-2" />
+              
               {careerPath.levels.map((level, index) => {
                 const levelNumber = index + 1;
                 const isCompleted = levelNumber < currentLevel;
                 const isActive = levelNumber === currentLevel;
                 const coursesCount = level.courses.length;
-                const completedCount = isCompleted ? coursesCount : 0;
-                const progress = (completedCount / coursesCount) * 100;
+                const levelCompletedCourses = courseProgressService.getCompletedCoursesByLevel(levelNumber);
+                const levelProgress = (levelCompletedCourses.length / coursesCount) * 100;
                 
                 return (
                   <div key={index} className="space-y-1">
@@ -179,9 +209,9 @@ const CoursesPage = () => {
                           {isActive && <Badge variant="outline" className="ml-2 bg-primary/10 text-primary text-xs">Current</Badge>}
                         </span>
                       </div>
-                      <span className="text-xs text-muted-foreground">{completedCount}/{coursesCount}</span>
+                      <span className="text-xs text-muted-foreground">{levelCompletedCourses.length}/{coursesCount}</span>
                     </div>
-                    <Progress value={progress} className="h-1" />
+                    <Progress value={levelProgress} className="h-1" />
                   </div>
                 );
               })}
@@ -193,46 +223,15 @@ const CoursesPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.length > 0 ? (
             filteredCourses.map((course, index) => (
-              <Card key={index} className={`overflow-hidden ${course.isCompleted ? 'border-green-500/40' : course.isCurrentLevel ? 'border-primary/40' : ''}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <Badge variant="outline" className={course.isCompleted ? 'bg-green-500/10 text-green-500' : course.isCurrentLevel ? 'bg-primary/10 text-primary' : 'bg-secondary/50'}>
-                        Level {course.levelNumber}
-                      </Badge>
-                      <CardTitle className="mt-2 text-lg line-clamp-2">{course.name}</CardTitle>
-                    </div>
-                    {course.isCompleted && (
-                      <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
-                    )}
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="pb-3">
-                  <div className="flex items-center text-sm text-muted-foreground mb-2">
-                    <Clock className="h-4 w-4 mr-1" />
-                    <span>Est. 4-6 hours</span>
-                  </div>
-                  
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {course.levelTitle}
-                  </p>
-                </CardContent>
-                
-                <CardFooter className="pt-0">
-                  <a 
-                    href={course.link} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="w-full"
-                  >
-                    <Button variant={course.isCompleted ? "outline" : "default"} className="w-full">
-                      {course.isCompleted ? 'Review Course' : 'Start Course'}
-                      <ExternalLink className="h-4 w-4 ml-2" />
-                    </Button>
-                  </a>
-                </CardFooter>
-              </Card>
+              <CourseCard
+                key={`${course.levelNumber}-${course.courseIndex}`}
+                course={course}
+                levelNumber={course.levelNumber}
+                levelTitle={course.levelTitle}
+                isCompleted={course.isCompleted}
+                isCurrentLevel={course.isCurrentLevel}
+                index={course.courseIndex}
+              />
             ))
           ) : (
             <div className="col-span-full text-center py-12">

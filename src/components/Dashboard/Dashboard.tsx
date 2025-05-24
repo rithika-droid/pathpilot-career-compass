@@ -10,6 +10,7 @@ import { getCareerRoadmap } from '../../utils/careerAlgorithm';
 import MainLayout from '../Layout/MainLayout';
 import ProfileEditor from '../Profile/ProfileEditor';
 import ContactInfo from '../Contact/ContactInfo';
+import CompletedCoursesSection from '../Courses/CompletedCoursesSection';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/use-mobile';
 
@@ -41,7 +42,7 @@ const Dashboard = () => {
   const progressPercentage = (currentLevel / 5) * 100;
   
   const handleContinueLearning = () => {
-    navigate('/courses', { state: { level: 1 } });
+    navigate('/courses', { state: { level: currentLevel } });
   };
 
   return (
@@ -180,60 +181,65 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Profile and Contact Section */}
+        {/* Completed Courses and Profile Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <CompletedCoursesSection />
           <ProfileEditor />
-          <ContactInfo />
         </div>
 
-        {/* Roadmap Preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Learning Roadmap</CardTitle>
-            <CardDescription>
-              Complete journey to become a {profile.careerPath}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pb-6">
-            <div className={`grid grid-cols-1 ${isMobile ? '' : 'md:grid-cols-5'} gap-4`}>
-              {Object.entries(roadmap).map(([key, level], index) => {
-                const levelNum = index + 1;
-                const isCompleted = levelNum < currentLevel;
-                const isCurrent = levelNum === currentLevel;
-                
-                return (
-                  <div
-                    key={key}
-                    className={`p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
-                      isCompleted
-                        ? 'bg-green-500/10 border-green-500/30'
-                        : isCurrent
-                        ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20'
-                        : 'bg-secondary/30 border-border'
-                    }`}
-                    onClick={() => navigate('/roadmap', { state: { level: levelNum } })}
-                  >
-                    <div className="text-center">
-                      <div
-                        className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center text-sm font-bold ${
-                          isCompleted
-                            ? 'bg-green-500 text-white'
-                            : isCurrent
-                            ? 'bg-primary text-white'
-                            : 'bg-secondary text-muted-foreground'
-                        }`}
-                      >
-                        {levelNum}
+        {/* Contact and Roadmap Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <ContactInfo />
+          
+          {/* Roadmap Preview */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Your Learning Roadmap</CardTitle>
+              <CardDescription>
+                Complete journey to become a {profile.careerPath}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pb-6">
+              <div className={`grid grid-cols-1 ${isMobile ? '' : 'md:grid-cols-5'} gap-4`}>
+                {Object.entries(roadmap).map(([key, level], index) => {
+                  const levelNum = index + 1;
+                  const isCompleted = levelNum < currentLevel;
+                  const isCurrent = levelNum === currentLevel;
+                  
+                  return (
+                    <div
+                      key={key}
+                      className={`p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
+                        isCompleted
+                          ? 'bg-green-500/10 border-green-500/30'
+                          : isCurrent
+                          ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20'
+                          : 'bg-secondary/30 border-border'
+                      }`}
+                      onClick={() => navigate('/roadmap', { state: { level: levelNum } })}
+                    >
+                      <div className="text-center">
+                        <div
+                          className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center text-sm font-bold ${
+                            isCompleted
+                              ? 'bg-green-500 text-white'
+                              : isCurrent
+                              ? 'bg-primary text-white'
+                              : 'bg-secondary text-muted-foreground'
+                          }`}
+                        >
+                          {levelNum}
+                        </div>
+                        <h4 className="font-semibold text-sm">{level.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-1">{level.duration}</p>
                       </div>
-                      <h4 className="font-semibold text-sm">{level.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">{level.duration}</p>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </MainLayout>
   );

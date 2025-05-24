@@ -19,18 +19,13 @@ const Index = () => {
     );
   }
 
+  // If authenticated, redirect to dashboard
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   // If not authenticated, show landing page
-  if (!user) {
-    return <Landing />;
-  }
-
-  // If authenticated but no profile setup, redirect to profile setup
-  if (!userProfile?.careerPath) {
-    return <Navigate to="/profile-setup" replace />;
-  }
-
-  // If everything is set up, redirect to dashboard
-  return <Navigate to="/dashboard" replace />;
+  return <Landing />;
 };
 
 export default Index;
