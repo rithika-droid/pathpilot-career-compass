@@ -1,234 +1,218 @@
+
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { BookOpen, Trophy, Target, TrendingUp, Clock, Star } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { BookOpen, Trophy, Calendar, Play, Target, Star } from 'lucide-react';
-import { getCareerRoadmap } from '../../utils/careerAlgorithm';
-import MainLayout from '../Layout/MainLayout';
-import { useNavigate } from 'react-router-dom';
-import { useIsMobile } from '../../hooks/use-mobile';
-
-interface RoadmapLevel {
-  title: string;
-  duration: string;
-  courses: string[];
-}
-
-interface Roadmap {
-  [key: string]: RoadmapLevel;
-}
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const profile = user?.profile;
-  
-  if (!profile?.careerPath) {
-    return <div>Loading...</div>;
-  }
 
-  const roadmap = getCareerRoadmap(profile.careerPath) as Roadmap;
-  const currentLevel = profile.level || 1;
-  const points = profile.points || 0;
-  const badges = profile.badges || [];
-
-  // Calculate progress based on completed courses
-  const totalCourses = Object.values(roadmap).reduce((sum, level) => sum + level.courses.length, 0);
-  const completedCourses = profile.completedCourses?.length || 0;
-  const progressPercentage = totalCourses > 0 ? (completedCourses / totalCourses) * 100 : 0;
-  
-  const handleContinueLearning = () => {
-    navigate('/courses', { state: { level: 1 } });
+  // Mock data for demonstration
+  const mockStats = {
+    coursesCompleted: 3,
+    totalCourses: 12,
+    certificates: 2,
+    points: 1250,
+    streak: 7,
+    nextMilestone: 'Complete 5 courses'
   };
 
+  const mockRecentActivity = [
+    { id: 1, type: 'course', title: 'JavaScript Fundamentals', status: 'completed', date: '2 days ago' },
+    { id: 2, type: 'certificate', title: 'Web Development Certificate', status: 'earned', date: '1 week ago' },
+    { id: 3, type: 'course', title: 'React Basics', status: 'in-progress', date: '3 days ago' }
+  ];
+
+  const mockUpcomingDeadlines = [
+    { id: 1, title: 'React Advanced Course', dueDate: '3 days', priority: 'high' },
+    { id: 2, title: 'TypeScript Fundamentals', dueDate: '1 week', priority: 'medium' },
+    { id: 3, title: 'Node.js Basics', dueDate: '2 weeks', priority: 'low' }
+  ];
+
+  const progressPercentage = (mockStats.coursesCompleted / mockStats.totalCourses) * 100;
+
   return (
-    <MainLayout>
-      <div className="container mx-auto px-4 pt-20 pb-10">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            Welcome back, {user?.username}! 👋
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 pt-20 px-4">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Welcome Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Welcome back, {user?.email?.split('@')[0] || 'Explorer'}! 🚀
           </h1>
-          <p className="text-xl text-muted-foreground">
-            Continue your journey as a <span className="text-primary font-semibold">{profile.careerPath}</span>
+          <p className="text-lg text-muted-foreground">
+            Continue your learning journey and achieve your career goals
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/20 border-blue-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600">Current Level</p>
-                  <p className="text-3xl font-bold">{currentLevel}</p>
-                </div>
-                <Target className="h-8 w-8 text-blue-500" />
-              </div>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Courses Completed</CardTitle>
+              <BookOpen className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{mockStats.coursesCompleted}</div>
+              <p className="text-xs text-muted-foreground">
+                +2 from last month
+              </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-500/10 to-green-600/20 border-green-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600">Points Earned</p>
-                  <p className="text-3xl font-bold">{points}</p>
-                </div>
-                <Star className="h-8 w-8 text-green-500" />
-              </div>
+          <Card className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Certificates</CardTitle>
+              <Trophy className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{mockStats.certificates}</div>
+              <p className="text-xs text-muted-foreground">
+                +1 this month
+              </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/20 border-purple-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-600">Badges</p>
-                  <p className="text-3xl font-bold">{badges.length}</p>
-                </div>
-                <Trophy className="h-8 w-8 text-purple-500" />
-              </div>
+          <Card className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Points Earned</CardTitle>
+              <Star className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{mockStats.points}</div>
+              <p className="text-xs text-muted-foreground">
+                +150 this week
+              </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-500/10 to-orange-600/20 border-orange-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-600">Progress</p>
-                  <p className="text-3xl font-bold">{Math.round(progressPercentage)}%</p>
-                </div>
-                <BookOpen className="h-8 w-8 text-orange-500" />
-              </div>
+          <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Learning Streak</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{mockStats.streak} days</div>
+              <p className="text-xs text-muted-foreground">
+                Keep it up! 🔥
+              </p>
             </CardContent>
           </Card>
         </div>
 
+        {/* Progress Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Continue Learning Card */}
-          <Card className="lg:col-span-2 bg-gradient-to-br from-primary/5 to-accent/10 border-primary/20">
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Play className="h-5 w-5" />
-                Continue Your Course
+                <Target className="h-5 w-5" />
+                Overall Progress
               </CardTitle>
-              <CardDescription>
-                Level {currentLevel}: {roadmap[`level${currentLevel}` as keyof typeof roadmap]?.title}
-              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Level Progress</span>
-                    <span>{Math.round(progressPercentage)}%</span>
-                  </div>
-                  <Progress value={progressPercentage} className="h-2" />
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Course Completion</span>
+                  <span>{mockStats.coursesCompleted}/{mockStats.totalCourses} courses</span>
                 </div>
-                
-                <div className="space-y-2">
-                  <h4 className="font-semibold">Current Courses:</h4>
-                  <div className="max-h-24 overflow-y-auto pr-1">
-                    {roadmap[`level${currentLevel}` as keyof typeof roadmap]?.courses.map((course, index) => (
-                      <div key={index} className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        <span className="text-sm">{course}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <Button className="w-full" onClick={handleContinueLearning}>
-                  Continue Learning
+                <Progress value={progressPercentage} className="h-3" />
+                <p className="text-sm text-muted-foreground">
+                  {Math.round(progressPercentage)}% complete
+                </p>
+              </div>
+              
+              <div className="pt-4 border-t">
+                <h4 className="font-medium mb-2">Next Milestone</h4>
+                <p className="text-sm text-muted-foreground">{mockStats.nextMilestone}</p>
+                <Button className="mt-2" size="sm">
+                  View Roadmap
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Weekly Schedule */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                This Week
+                <Clock className="h-5 w-5" />
+                Upcoming Deadlines
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-2 bg-secondary/50 rounded">
-                  <span className="text-sm">Mon: Practice Problems</span>
-                  <Badge variant="outline">2h</Badge>
+            <CardContent className="space-y-3">
+              {mockUpcomingDeadlines.map((deadline) => (
+                <div key={deadline.id} className="flex items-center justify-between p-2 rounded-lg bg-secondary/30">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{deadline.title}</p>
+                    <p className="text-xs text-muted-foreground">Due in {deadline.dueDate}</p>
+                  </div>
+                  <Badge 
+                    variant={deadline.priority === 'high' ? 'destructive' : deadline.priority === 'medium' ? 'default' : 'secondary'}
+                  >
+                    {deadline.priority}
+                  </Badge>
                 </div>
-                <div className="flex justify-between items-center p-2 bg-secondary/50 rounded">
-                  <span className="text-sm">Wed: Video Lectures</span>
-                  <Badge variant="outline">1.5h</Badge>
-                </div>
-                <div className="flex justify-between items-center p-2 bg-secondary/50 rounded">
-                  <span className="text-sm">Fri: Project Work</span>
-                  <Badge variant="outline">3h</Badge>
-                </div>
-                <div className="flex justify-between items-center p-2 bg-secondary/50 rounded">
-                  <span className="text-sm">Sun: Review & Test</span>
-                  <Badge variant="outline">1h</Badge>
-                </div>
-              </div>
+              ))}
             </CardContent>
           </Card>
         </div>
 
-        {/* Roadmap Preview */}
-        <Card className="mt-6">
+        {/* Recent Activity */}
+        <Card>
           <CardHeader>
-            <CardTitle>Your Learning Roadmap</CardTitle>
-            <CardDescription>
-              Complete journey to become a {profile.careerPath}
-            </CardDescription>
+            <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
-          <CardContent className="pb-6">
-            <div className={`grid grid-cols-1 ${isMobile ? '' : 'md:grid-cols-5'} gap-4`}>
-              {Object.entries(roadmap).map(([key, level], index) => {
-                const levelNum = index + 1;
-                const isCompleted = levelNum < currentLevel;
-                const isCurrent = levelNum === currentLevel;
-                
-                return (
-                  <div
-                    key={key}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      isCompleted
-                        ? 'bg-green-500/10 border-green-500/30'
-                        : isCurrent
-                        ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20'
-                        : 'bg-secondary/30 border-border'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div
-                        className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center text-sm font-bold ${
-                          isCompleted
-                            ? 'bg-green-500 text-white'
-                            : isCurrent
-                            ? 'bg-primary text-white'
-                            : 'bg-secondary text-muted-foreground'
-                        }`}
-                      >
-                        {levelNum}
-                      </div>
-                      <h4 className="font-semibold text-sm">{level.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">{level.duration}</p>
+          <CardContent>
+            <div className="space-y-4">
+              {mockRecentActivity.map((activity) => (
+                <div key={activity.id} className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
+                  <div className="flex items-center gap-3">
+                    {activity.type === 'course' ? (
+                      <BookOpen className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Trophy className="h-5 w-5 text-accent" />
+                    )}
+                    <div>
+                      <p className="font-medium">{activity.title}</p>
+                      <p className="text-sm text-muted-foreground">{activity.date}</p>
                     </div>
                   </div>
-                );
-              })}
+                  <Badge 
+                    variant={activity.status === 'completed' || activity.status === 'earned' ? 'default' : 'secondary'}
+                  >
+                    {activity.status.replace('-', ' ')}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button variant="outline" className="h-20 flex flex-col gap-2">
+                <BookOpen className="h-6 w-6" />
+                <span>Browse Courses</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex flex-col gap-2">
+                <Target className="h-6 w-6" />
+                <span>View Roadmap</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex flex-col gap-2">
+                <Trophy className="h-6 w-6" />
+                <span>Check Rewards</span>
+              </Button>
             </div>
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </div>
   );
 };
 
