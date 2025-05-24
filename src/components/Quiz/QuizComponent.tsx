@@ -4,11 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 interface Question {
   question: string;
@@ -31,14 +30,15 @@ interface QuizComponentProps {
 }
 
 const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComplete }) => {
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [score, setScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [score, setScore] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadQuiz();
@@ -54,9 +54,21 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
         .single();
 
       if (error) throw error;
-      
-      setQuiz(data);
-      setSelectedAnswers(new Array(data.questions.length).fill(-1));
+
+      if (data) {
+        // Parse the JSON questions properly
+        const parsedQuestions = Array.isArray(data.questions) 
+          ? data.questions as Question[]
+          : JSON.parse(data.questions as string) as Question[];
+        
+        const quizData: Quiz = {
+          ...data,
+          questions: parsedQuestions
+        };
+        
+        setQuiz(quizData);
+        setAnswers(new Array(parsedQuestions.length).fill(-1));
+      }
     } catch (error) {
       console.error('Error loading quiz:', error);
       toast({
@@ -65,50 +77,58 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const handleAnswerSelect = (answerIndex: number) => {
-    const newAnswers = [...selectedAnswers];
-    newAnswers[currentQuestion] = answerIndex;
-    setSelectedAnswers(newAnswers);
+    setSelectedAnswer(answerIndex);
   };
 
-  const handleNext = () => {
-    if (currentQuestion < (quiz?.questions.length || 0) - 1) {
+  const handleNextQuestion = () => {
+    if (selectedAnswer === null || !quiz) return;
+
+    const newAnswers = [...answers];
+    newAnswers[currentQuestion] = selectedAnswer;
+    setAnswers(newAnswers);
+
+    if (currentQuestion < quiz.questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(newAnswers[currentQuestion + 1] === -1 ? null : newAnswers[currentQuestion + 1]);
     } else {
-      submitQuiz();
+      calculateResults(newAnswers);
     }
   };
 
-  const handlePrevious = () => {
+  const handlePreviousQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
+      setSelectedAnswer(answers[currentQuestion - 1] === -1 ? null : answers[currentQuestion - 1]);
     }
   };
 
-  const submitQuiz = async () => {
+  const calculateResults = async (finalAnswers: number[]) => {
     if (!quiz || !user) return;
 
-    const correctAnswers = selectedAnswers.reduce((count, answer, index) => {
-      return answer === quiz.questions[index].correct ? count + 1 : count;
-    }, 0);
+    let correctAnswers = 0;
+    finalAnswers.forEach((answer, index) => {
+      if (answer === quiz.questions[index].correct) {
+        correctAnswers++;
+      }
+    });
 
     const finalScore = Math.round((correctAnswers / quiz.questions.length) * 100);
     setScore(finalScore);
     setShowResults(true);
 
+    // Save quiz attempt
     try {
-      await supabase
-        .from('quiz_attempts')
-        .insert({
-          user_id: user.id,
-          quiz_id: quiz.id,
-          score: finalScore,
-          answers: selectedAnswers
-        });
+      await supabase.from('quiz_attempts').insert({
+        user_id: user.id,
+        quiz_id: quiz.id,
+        score: finalScore,
+        answers: finalAnswers
+      });
 
       const passed = finalScore >= quiz.passing_score;
       onComplete(passed, finalScore);
@@ -126,15 +146,15 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
         });
       }
     } catch (error) {
-      console.error('Error submitting quiz:', error);
+      console.error('Error saving quiz attempt:', error);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <Card>
-        <CardContent className="p-6 text-center">
-          <p>Loading quiz...</p>
+        <CardContent className="p-6">
+          <div className="text-center">Loading quiz...</div>
         </CardContent>
       </Card>
     );
@@ -143,8 +163,8 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
   if (!quiz) {
     return (
       <Card>
-        <CardContent className="p-6 text-center">
-          <p>No quiz available for this level.</p>
+        <CardContent className="p-6">
+          <div className="text-center">No quiz available for this level.</div>
         </CardContent>
       </Card>
     );
@@ -164,50 +184,37 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
             Quiz Results
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-center">
-            <div className="text-4xl font-bold mb-2">{score}%</div>
-            <p className="text-muted-foreground">
-              You need {quiz.passing_score}% to pass
-            </p>
-          </div>
-          <Progress value={score} className="w-full" />
-          <div className="text-center">
-            {passed ? (
-              <p className="text-green-600 font-medium">
-                Congratulations! You passed the quiz.
-              </p>
-            ) : (
-              <p className="text-red-600 font-medium">
-                You need to score higher to pass. Try again!
-              </p>
-            )}
+        <CardContent>
+          <div className="text-center space-y-4">
+            <div className="text-4xl font-bold">{score}%</div>
+            <div className={`text-lg ${passed ? 'text-green-600' : 'text-red-600'}`}>
+              {passed ? 'Congratulations! You passed!' : `You need ${quiz.passing_score}% to pass. Try again!`}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              You got {Math.round((score / 100) * quiz.questions.length)} out of {quiz.questions.length} questions correct.
+            </div>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  const question = quiz.questions[currentQuestion];
-  const progress = ((currentQuestion + 1) / quiz.questions.length) * 100;
+  const currentQ = quiz.questions[currentQuestion];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Level {level} Assessment</CardTitle>
+        <CardTitle>Level {level} Quiz</CardTitle>
         <CardDescription>
           Question {currentQuestion + 1} of {quiz.questions.length}
         </CardDescription>
-        <Progress value={progress} className="w-full" />
       </CardHeader>
       <CardContent className="space-y-6">
-        <div>
-          <h3 className="text-lg font-medium mb-4">{question.question}</h3>
-          <RadioGroup
-            value={selectedAnswers[currentQuestion]?.toString()}
-            onValueChange={(value) => handleAnswerSelect(parseInt(value))}
-          >
-            {question.options.map((option, index) => (
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">{currentQ.question}</h3>
+          
+          <RadioGroup value={selectedAnswer?.toString()} onValueChange={(value) => handleAnswerSelect(parseInt(value))}>
+            {currentQ.options.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <RadioGroupItem value={index.toString()} id={`option-${index}`} />
                 <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
@@ -221,16 +228,17 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ level, careerPath, onComp
         <div className="flex justify-between">
           <Button
             variant="outline"
-            onClick={handlePrevious}
+            onClick={handlePreviousQuestion}
             disabled={currentQuestion === 0}
           >
             Previous
           </Button>
+          
           <Button
-            onClick={handleNext}
-            disabled={selectedAnswers[currentQuestion] === -1}
+            onClick={handleNextQuestion}
+            disabled={selectedAnswer === null}
           >
-            {currentQuestion === quiz.questions.length - 1 ? 'Submit' : 'Next'}
+            {currentQuestion === quiz.questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
           </Button>
         </div>
       </CardContent>

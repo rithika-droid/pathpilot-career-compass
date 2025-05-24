@@ -1,22 +1,22 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, GraduationCap, Briefcase, School, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { CheckCircle, Circle, Lock, BookOpen, Trophy, Users } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { careerPaths } from '../data/careerPaths';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from 'react-router-dom';
+import QuizComponent from '../components/Quiz/QuizComponent';
 
 const RoadmapPage = () => {
-  const { user } = useAuth();
+  const { userProfile, updateProfile } = useAuth();
   const navigate = useNavigate();
-  const profile = user?.profile;
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [showQuiz, setShowQuiz] = useState(false);
   
-  if (!profile?.careerPath) {
+  if (!userProfile?.careerPath) {
     return (
       <MainLayout>
         <div className="container pt-20 px-4 flex flex-col items-center justify-center min-h-screen">
@@ -24,7 +24,7 @@ const RoadmapPage = () => {
             <CardHeader>
               <CardTitle>Complete Your Profile</CardTitle>
               <CardDescription>
-                Please complete your profile to view your personalized roadmap.
+                Please complete your profile to view your learning roadmap.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -38,232 +38,258 @@ const RoadmapPage = () => {
     );
   }
 
-  const careerPath = careerPaths[profile.careerPath];
-  const currentLevel = profile.level || 1;
+  const careerPath = careerPaths[userProfile.careerPath];
+  const currentLevel = userProfile.level || 1;
   
   if (!careerPath) {
     return (
       <MainLayout>
         <div className="container pt-20 px-4">
-          <h1 className="text-3xl font-bold mb-4">Career Roadmap</h1>
+          <h1 className="text-3xl font-bold mb-4">Learning Roadmap</h1>
           <p>Career path information not available.</p>
         </div>
       </MainLayout>
     );
   }
 
+  const handleQuizComplete = (passed: boolean, score: number) => {
+    if (passed && selectedLevel === currentLevel) {
+      // Update user level
+      const newLevel = currentLevel + 1;
+      const newPoints = (userProfile.points || 0) + 100;
+      updateProfile({
+        ...userProfile,
+        level: newLevel,
+        points: newPoints
+      });
+    }
+    setShowQuiz(false);
+    setSelectedLevel(null);
+  };
+
+  const handleLevelClick = (levelNumber: number) => {
+    setSelectedLevel(levelNumber);
+  };
+
+  const handleStartQuiz = () => {
+    setShowQuiz(true);
+  };
+
+  if (showQuiz && selectedLevel) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 pt-20 pb-16 max-w-4xl">
+          <div className="mb-6">
+            <Button variant="outline" onClick={() => setShowQuiz(false)}>
+              ← Back to Roadmap
+            </Button>
+          </div>
+          <QuizComponent
+            level={selectedLevel}
+            careerPath={userProfile.careerPath}
+            onComplete={handleQuizComplete}
+          />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (selectedLevel) {
+    const levelData = careerPath.levels[selectedLevel - 1];
+    const isCompleted = selectedLevel < currentLevel;
+    const isCurrentLevel = selectedLevel === currentLevel;
+    const isLocked = selectedLevel > currentLevel;
+
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 pt-20 pb-16">
+          <div className="mb-6">
+            <Button variant="outline" onClick={() => setSelectedLevel(null)}>
+              ← Back to Roadmap
+            </Button>
+          </div>
+          
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl">Level {selectedLevel}: {levelData.title}</CardTitle>
+                  <CardDescription className="text-lg mt-2">
+                    {levelData.description}
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  {isCompleted && <CheckCircle className="h-8 w-8 text-green-500" />}
+                  {isCurrentLevel && <Circle className="h-8 w-8 text-primary" />}
+                  {isLocked && <Lock className="h-8 w-8 text-muted-foreground" />}
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="flex items-center gap-3">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">{levelData.courses.length} Courses</p>
+                    <p className="text-sm text-muted-foreground">Interactive lessons</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Certificate</p>
+                    <p className="text-sm text-muted-foreground">Upon completion</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <Users className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Community</p>
+                    <p className="text-sm text-muted-foreground">Peer support</p>
+                  </div>
+                </div>
+              </div>
+
+              {isCurrentLevel && (
+                <div className="bg-primary/10 p-4 rounded-lg mb-6">
+                  <h3 className="font-semibold text-primary mb-2">Ready to test your knowledge?</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Complete the quiz to advance to the next level and earn your certificate.
+                  </p>
+                  <Button onClick={handleStartQuiz}>
+                    Start Level {selectedLevel} Quiz
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Courses */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Courses in This Level</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {levelData.courses.map((course, index) => (
+                  <Card key={index} className="border-l-4 border-l-primary">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg">{course.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between items-center">
+                        <Badge variant="outline">Course {index + 1}</Badge>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate('/courses', { state: { level: selectedLevel } })}
+                        >
+                          View Course
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Main roadmap view
   return (
     <MainLayout>
       <div className="container mx-auto px-4 pt-20 pb-16">
-        <div className="flex flex-col md:flex-row justify-between items-start mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Your Career Roadmap</h1>
-            <p className="text-muted-foreground text-lg mb-2">
-              Your path to becoming a {profile.careerPath}
+            <h1 className="text-3xl font-bold mb-2">Your Learning Roadmap</h1>
+            <p className="text-muted-foreground text-lg">
+              {userProfile.careerPath} Career Path
             </p>
-            <div className="flex items-center gap-2 mb-4">
-              <Badge variant="outline" className="bg-primary/10 text-primary">
-                {careerPath.salaryRange}
-              </Badge>
-              <Badge variant="outline" className="bg-secondary/10">
-                Current Level: {currentLevel}
-              </Badge>
-            </div>
           </div>
           
-          <div className="w-full md:w-64 mt-4 md:mt-0">
-            <p className="text-sm text-muted-foreground mb-2">Overall Progress</p>
-            <Progress value={(currentLevel / 5) * 100} className="h-2 mb-2" />
-            <p className="text-xs text-right">{currentLevel}/5 Levels Completed</p>
+          <div className="mt-4 md:mt-0">
+            <Badge variant="outline" className="bg-primary/10 text-primary text-lg px-4 py-2">
+              Level {currentLevel} of {careerPath.levels.length}
+            </Badge>
           </div>
         </div>
         
-        {/* Career Skills */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl">Required Skills</CardTitle>
-            <CardDescription>
-              Key skills for a successful {profile.careerPath} career
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {careerPath.skills.map((skill, index) => (
-                <Badge key={index} variant="secondary">
-                  {skill}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Career Description */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl">Career Description</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{careerPath.description}</p>
-          </CardContent>
-        </Card>
-        
-        {/* Level-based Roadmap */}
-        <h2 className="text-2xl font-bold mb-4">Level-by-Level Roadmap</h2>
-        
-        {careerPath.levels.map((level, index) => {
-          const levelNumber = index + 1;
-          const isCurrentLevel = levelNumber === currentLevel;
-          const isCompleted = levelNumber < currentLevel;
-          const isLocked = levelNumber > currentLevel;
-          
-          return (
-            <Card 
-              key={index} 
-              className={`mb-6 ${isCurrentLevel ? 'border-primary' : isCompleted ? 'border-green-500' : ''}`}
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      isCompleted ? 'bg-green-500 text-white' : isCurrentLevel ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground'
-                    }`}>
-                      {levelNumber}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {careerPath.levels.map((level, index) => {
+            const levelNumber = index + 1;
+            const isCompleted = levelNumber < currentLevel;
+            const isCurrentLevel = levelNumber === currentLevel;
+            const isLocked = levelNumber > currentLevel;
+            
+            return (
+              <Card 
+                key={index} 
+                className={`cursor-pointer transition-all hover:shadow-lg ${
+                  isCompleted ? 'border-green-500 bg-green-50/50' : 
+                  isCurrentLevel ? 'border-primary bg-primary/5' : 
+                  isLocked ? 'opacity-60' : ''
+                }`}
+                onClick={() => !isLocked && handleLevelClick(levelNumber)}
+              >
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        isCompleted ? 'bg-green-500 text-white' : 
+                        isCurrentLevel ? 'bg-primary text-primary-foreground' : 
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {levelNumber}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">Level {levelNumber}</CardTitle>
+                        <CardDescription>{level.title}</CardDescription>
+                      </div>
                     </div>
-                    <CardTitle className="flex items-center gap-2">
-                      {level.title}
-                      {isCurrentLevel && <Badge variant="outline" className="bg-primary/20">Current</Badge>}
-                      {isCompleted && <CheckCircle className="h-5 w-5 text-green-500" />}
-                      {isLocked && <Badge variant="outline" className="bg-secondary/20">Locked</Badge>}
-                    </CardTitle>
+                    
+                    {isCompleted && <CheckCircle className="h-6 w-6 text-green-500" />}
+                    {isCurrentLevel && <Circle className="h-6 w-6 text-primary fill-current" />}
+                    {isLocked && <Lock className="h-6 w-6 text-muted-foreground" />}
                   </div>
-                  <Badge variant="outline">{level.duration || '2-3 months'}</Badge>
-                </div>
-                <CardDescription>
-                  Complete these resources to advance to the next level
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent>
-                <Tabs defaultValue="courses">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="courses">Courses</TabsTrigger>
-                    <TabsTrigger value="projects">Projects</TabsTrigger>
-                    <TabsTrigger value="career">Career</TabsTrigger>
-                  </TabsList>
+                </CardHeader>
+                
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    {level.description}
+                  </p>
                   
-                  <TabsContent value="courses" className="space-y-4">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <GraduationCap className="h-5 w-5" />
-                      Recommended Courses
-                    </h3>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {level.courses.length} courses
+                    </span>
                     
-                    <div className="space-y-3">
-                      {level.courses.map((course, idx) => (
-                        <Card key={idx} className="bg-secondary/20">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-center">
-                              <p className="font-medium">{course.name}</p>
-                              <a 
-                                href={course.link} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline flex items-center gap-1"
-                              >
-                                <span>Open</span>
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                    
-                    <div className="pt-2">
-                      <Button disabled={isLocked} className="w-full">
-                        {isCompleted ? 'Revisit Courses' : 'Start Learning'}
-                      </Button>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="projects" className="space-y-4">
-                    <h3 className="font-semibold">Hands-on Projects</h3>
-                    
-                    <div className="space-y-3">
-                      {level.projects ? level.projects.map((project, idx) => (
-                        <Card key={idx} className="bg-secondary/20">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-center">
-                              <p>{project}</p>
-                              <Badge variant={isCompleted ? "outline" : "secondary"}>
-                                {isCompleted ? 'Completed' : 'Pending'}
-                              </Badge>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )) : (
-                        <p className="text-muted-foreground">No projects specified for this level.</p>
-                      )}
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="career" className="space-y-6">
-                    <div>
-                      <h3 className="font-semibold flex items-center gap-2 mb-3">
-                        <Briefcase className="h-5 w-5" />
-                        Internship Opportunities
-                      </h3>
-                      <div className="space-y-2">
-                        {level.internships.map((link, idx) => (
-                          <a 
-                            key={idx}
-                            href={link}
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="block p-3 bg-secondary/20 rounded-md hover:bg-secondary/30 text-primary flex items-center justify-between"
-                          >
-                            <span>{new URL(link).hostname.replace('www.', '')}</span>
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-semibold flex items-center gap-2 mb-3">
-                        <Briefcase className="h-5 w-5" />
-                        Job Portals
-                      </h3>
-                      <div className="space-y-2">
-                        {level.jobs.map((link, idx) => (
-                          <a 
-                            key={idx}
-                            href={link}
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="block p-3 bg-secondary/20 rounded-md hover:bg-secondary/30 text-primary flex items-center justify-between"
-                          >
-                            <span>{new URL(link).hostname.replace('www.', '')}</span>
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-semibold flex items-center gap-2 mb-3">
-                        <School className="h-5 w-5" />
-                        Higher Education
-                      </h3>
-                      <div className="p-3 bg-secondary/20 rounded-md">
-                        <p className="text-sm">{level.masters}</p>
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          );
-        })}
+                    {isCurrentLevel && (
+                      <Badge className="bg-primary text-primary-foreground">
+                        In Progress
+                      </Badge>
+                    )}
+                    {isCompleted && (
+                      <Badge className="bg-green-500 text-white">
+                        Completed
+                      </Badge>
+                    )}
+                    {isLocked && (
+                      <Badge variant="secondary">
+                        Locked
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </MainLayout>
   );

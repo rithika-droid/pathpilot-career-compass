@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { useAuth } from '../hooks/useAuth';
@@ -19,10 +18,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Progress } from '@/components/ui/progress';
 
 const CoursesPage = () => {
-  const { user } = useAuth();
+  const { userProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const profile = user?.profile;
   
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState('all');
@@ -34,7 +32,7 @@ const CoursesPage = () => {
     }
   }, [location.state]);
   
-  if (!profile?.careerPath) {
+  if (!userProfile?.careerPath) {
     return (
       <MainLayout>
         <div className="container pt-20 px-4 flex flex-col items-center justify-center min-h-screen">
@@ -56,8 +54,8 @@ const CoursesPage = () => {
     );
   }
 
-  const careerPath = careerPaths[profile.careerPath];
-  const currentLevel = profile.level || 1;
+  const careerPath = careerPaths[userProfile.careerPath];
+  const currentLevel = userProfile.level || 1;
   
   if (!careerPath) {
     return (
@@ -106,7 +104,7 @@ const CoursesPage = () => {
           <div>
             <h1 className="text-3xl font-bold mb-2">Course Library</h1>
             <p className="text-muted-foreground">
-              Explore courses for your {profile.careerPath} career path
+              Explore courses for your {userProfile.careerPath} career path
             </p>
           </div>
           

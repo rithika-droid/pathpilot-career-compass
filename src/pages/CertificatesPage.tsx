@@ -9,11 +9,10 @@ import { careerPaths } from '../data/careerPaths';
 import { useNavigate } from 'react-router-dom';
 
 const CertificatesPage = () => {
-  const { user } = useAuth();
+  const { user, userProfile, profile } = useAuth();
   const navigate = useNavigate();
-  const profile = user?.profile;
   
-  if (!profile?.careerPath) {
+  if (!userProfile?.careerPath) {
     return (
       <MainLayout>
         <div className="container pt-20 px-4 flex flex-col items-center justify-center min-h-screen">
@@ -35,8 +34,8 @@ const CertificatesPage = () => {
     );
   }
 
-  const currentLevel = profile.level || 1;
-  const careerPath = careerPaths[profile.careerPath];
+  const currentLevel = userProfile.level || 1;
+  const careerPath = careerPaths[userProfile.careerPath];
   
   if (!careerPath) {
     return (
@@ -96,11 +95,11 @@ const CertificatesPage = () => {
                         <div className="text-center py-4">
                           <p className="text-lg font-bold">Certificate of Completion</p>
                           <p className="text-sm mt-1">This certifies that</p>
-                          <p className="font-semibold mt-1">{user.username}</p>
+                          <p className="font-semibold mt-1">{profile?.username || user?.email?.split('@')[0] || 'User'}</p>
                           <p className="text-sm mt-1">has successfully completed</p>
                           <p className="font-semibold mt-1">{level.title}</p>
                           <p className="text-sm mt-1">in the</p>
-                          <p className="font-semibold mt-1">{profile.careerPath} Track</p>
+                          <p className="font-semibold mt-1">{userProfile.careerPath} Track</p>
                         </div>
                       </div>
                     ) : (
