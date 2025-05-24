@@ -54,21 +54,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('AuthProvider: Setting up auth state listener');
     
-    // Check for existing session token in localStorage
+    // Check for existing session token in localStorage first
     const savedSession = localStorage.getItem('pathpilot_session');
     if (savedSession) {
       try {
         const sessionData = JSON.parse(savedSession);
         if (sessionData.expires_at && new Date(sessionData.expires_at) > new Date()) {
-          // Create a mock user for local session
+          // Create a properly typed mock user for local session
           const mockUser = {
             id: sessionData.user_id,
             email: sessionData.email,
-            user_metadata: { full_name: sessionData.username }
+            user_metadata: { full_name: sessionData.username },
+            app_metadata: {},
+            aud: 'authenticated',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            email_confirmed_at: new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            role: 'authenticated',
+            confirmation_sent_at: null,
+            confirmed_at: new Date().toISOString(),
+            email_change_sent_at: null,
+            new_email: null,
+            invited_at: null,
+            action_link: null,
+            email_change: null,
+            email_change_confirm_status: 0,
+            banned_until: null,
+            new_phone: null,
+            phone_change_sent_at: null,
+            phone_change: null,
+            phone_confirmed_at: null,
+            phone_change_confirm_status: 0,
+            recovery_sent_at: null,
+            identities: [],
+            factors: [],
+            is_anonymous: false
           } as User;
           
+          const mockSession = {
+            access_token: 'mock-token',
+            refresh_token: 'mock-refresh',
+            expires_in: 3600,
+            expires_at: Math.floor(sessionData.expires_at / 1000),
+            token_type: 'bearer',
+            user: mockUser
+          } as Session;
+          
           setUser(mockUser);
-          setSession(sessionData as Session);
+          setSession(mockSession);
           
           // Load user profile
           const savedUserProfile = localStorage.getItem('pathpilot_user_profile');
@@ -76,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUserProfile(JSON.parse(savedUserProfile));
           }
           
+          console.log('Restored session from localStorage');
           setLoading(false);
           return;
         } else {
@@ -87,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
     
-    // Set up auth state listener for Supabase
+    // Set up auth state listener for Supabase (fallback)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
@@ -105,50 +140,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             username: session.user.user_metadata?.full_name || session.user.email?.split('@')[0]
           }));
           
-          setTimeout(async () => {
+          // Load legacy profile from localStorage if exists
+          const savedUserProfile = localStorage.getItem('pathpilot_user_profile');
+          if (savedUserProfile) {
             try {
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-              
-              if (profileData) {
-                setProfile(profileData);
-              }
-              
-              // Load legacy profile from localStorage if exists
-              const savedUserProfile = localStorage.getItem('pathpilot_user_profile');
-              if (savedUserProfile) {
-                try {
-                  const parsedProfile = JSON.parse(savedUserProfile);
-                  setUserProfile(parsedProfile);
-                } catch (e) {
-                  console.error('Error parsing user profile from localStorage', e);
-                }
-              }
-              
-            } catch (error) {
-              console.error('Error fetching profile:', error);
-            } finally {
-              setLoading(false);
+              const parsedProfile = JSON.parse(savedUserProfile);
+              setUserProfile(parsedProfile);
+            } catch (e) {
+              console.error('Error parsing user profile from localStorage', e);
             }
-          }, 0);
+          }
         } else {
           setProfile(null);
           setUserProfile(null);
           localStorage.removeItem('pathpilot_session');
-          setLoading(false);
         }
+        
+        setLoading(false);
       }
     );
 
-    // Check for existing Supabase session
+    // Check for existing Supabase session with timeout
+    const sessionTimeout = setTimeout(() => {
+      console.log('Session check timed out, proceeding without Supabase auth');
+      setLoading(false);
+    }, 2000);
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(sessionTimeout);
       console.log('Initial session check:', session?.user?.email);
       if (!session) {
         setLoading(false);
       }
+    }).catch((error) => {
+      clearTimeout(sessionTimeout);
+      console.error('Error checking session:', error);
+      setLoading(false);
     });
 
     return () => {
@@ -164,29 +191,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // For demo purposes, allow any email/password combination
       if (email && password) {
-        // Create a mock session for local development
+        // Create properly typed mock objects
         const mockUser = {
           id: `user-${Date.now()}`,
           email: email,
-          user_metadata: { full_name: email.split('@')[0] }
+          user_metadata: { full_name: email.split('@')[0] },
+          app_metadata: {},
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          email_confirmed_at: new Date().toISOString(),
+          last_sign_in_at: new Date().toISOString(),
+          role: 'authenticated',
+          confirmation_sent_at: null,
+          confirmed_at: new Date().toISOString(),
+          email_change_sent_at: null,
+          new_email: null,
+          invited_at: null,
+          action_link: null,
+          email_change: null,
+          email_change_confirm_status: 0,
+          banned_until: null,
+          new_phone: null,
+          phone_change_sent_at: null,
+          phone_change: null,
+          phone_confirmed_at: null,
+          phone_change_confirm_status: 0,
+          recovery_sent_at: null,
+          identities: [],
+          factors: [],
+          is_anonymous: false
         } as User;
         
         const mockSession = {
           access_token: 'mock-token',
           refresh_token: 'mock-refresh',
-          expires_at: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
-          user: mockUser,
-          user_id: mockUser.id,
-          username: email.split('@')[0]
+          expires_in: 3600,
+          expires_at: Math.floor((Date.now() + (24 * 60 * 60 * 1000)) / 1000), // 24 hours
+          token_type: 'bearer',
+          user: mockUser
         } as Session;
         
         // Save to localStorage
-        localStorage.setItem('pathpilot_session', JSON.stringify(mockSession));
+        localStorage.setItem('pathpilot_session', JSON.stringify({
+          ...mockSession,
+          expires_at: Date.now() + (24 * 60 * 60 * 1000), // Store as milliseconds for easier comparison
+          user_id: mockUser.id,
+          email: mockUser.email,
+          username: email.split('@')[0]
+        }));
         
         setUser(mockUser);
         setSession(mockSession);
         
         console.log('Mock login successful for:', email);
+        setLoading(false);
         return;
       }
       

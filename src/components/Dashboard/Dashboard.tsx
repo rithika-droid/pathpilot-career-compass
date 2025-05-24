@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '../../hooks/useAuth';
 import { BookOpen, Trophy, Calendar, Play, Target, Star } from 'lucide-react';
 import { getCareerRoadmap } from '../../utils/careerAlgorithm';
@@ -24,20 +25,125 @@ interface Roadmap {
   [key: string]: RoadmapLevel;
 }
 
+const DashboardSkeleton = () => (
+  <MainLayout>
+    <div className="container mx-auto px-4 pt-20 pb-10">
+      <div className="mb-8">
+        <Skeleton className="h-10 w-96 mb-2" />
+        <Skeleton className="h-6 w-80" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {Array(4).fill(0).map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Skeleton className="h-4 w-20 mb-2" />
+                  <Skeleton className="h-8 w-12" />
+                </div>
+                <Skeleton className="h-8 w-8 rounded" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-36" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-32 w-full" />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {Array(4).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  </MainLayout>
+);
+
 const Dashboard = () => {
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const profile = userProfile;
   
-  if (!profile?.careerPath) {
-    return <div>Loading...</div>;
+  // Show skeleton while loading
+  if (loading) {
+    return <DashboardSkeleton />;
   }
 
-  const roadmap = getCareerRoadmap(profile.careerPath) as Roadmap;
-  const currentLevel = profile.level || 1;
-  const points = profile.points || 0;
-  const badges = profile.badges || [];
+  // If no user profile, show a simplified dashboard with profile setup
+  if (!userProfile?.careerPath) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 pt-20 pb-10">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-2">
+              Welcome, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Student'}! 👋
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              Let's get you started on your learning journey
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <Card className="bg-gradient-to-br from-primary/5 to-accent/10 border-primary/20">
+              <CardHeader>
+                <CardTitle>Complete Your Profile</CardTitle>
+                <CardDescription>
+                  Set up your profile to get personalized course recommendations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => navigate('/profile-setup')} className="w-full">
+                  Set Up Profile
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Explore Courses</CardTitle>
+                <CardDescription>
+                  Browse available courses and start learning
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" onClick={() => navigate('/courses')} className="w-full">
+                  Browse Courses
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CompletedCoursesSection />
+            <ProfileEditor />
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const roadmap = getCareerRoadmap(userProfile.careerPath) as Roadmap;
+  const currentLevel = userProfile.level || 1;
+  const points = userProfile.points || 0;
+  const badges = userProfile.badges || [];
 
   const progressPercentage = (currentLevel / 5) * 100;
   
@@ -51,10 +157,10 @@ const Dashboard = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">
-            Welcome back, {user?.user_metadata?.full_name || user?.email?.split('@')[0]}! 👋
+            Welcome back, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Student'}! 👋
           </h1>
           <p className="text-xl text-muted-foreground">
-            Continue your journey as a <span className="text-primary font-semibold">{profile.careerPath}</span>
+            Continue your journey as a <span className="text-primary font-semibold">{userProfile.careerPath}</span>
           </p>
         </div>
 
@@ -118,7 +224,7 @@ const Dashboard = () => {
                 Continue Your Course
               </CardTitle>
               <CardDescription>
-                Level {currentLevel}: {roadmap[`level${currentLevel}` as keyof typeof roadmap]?.title}
+                Level {currentLevel}: {roadmap[`level${currentLevel}` as keyof typeof roadmap]?.title || 'Getting Started'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -139,7 +245,12 @@ const Dashboard = () => {
                         <div className="w-2 h-2 bg-primary rounded-full"></div>
                         <span className="text-sm">{course}</span>
                       </div>
-                    ))}
+                    )) || (
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 bg-primary rounded-full"></div>
+                        <span className="text-sm">Introduction to Programming</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -196,7 +307,7 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle>Your Learning Roadmap</CardTitle>
               <CardDescription>
-                Complete journey to become a {profile.careerPath}
+                Complete journey to become a {userProfile.careerPath}
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-6">
