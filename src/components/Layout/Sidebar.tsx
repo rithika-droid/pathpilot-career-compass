@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { UserCircle, LayoutDashboard, Route, GraduationCap, Award, Trophy, Settings, HelpCircle, X } from 'lucide-react';
+import { UserCircle, LayoutDashboard, Route, GraduationCap, Award, Trophy, Settings, HelpCircle, X, Mail, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -104,10 +104,26 @@ const Sidebar: React.FC<SidebarProps> = ({
           </ul>
         </nav>
 
-        <div className="p-4 border-t border-border/50">
-          <div className="text-sm text-muted-foreground text-center">
-            <p className="font-medium">PathPilot v1.0</p>
-            <p className="text-xs mt-1">© 2025 PathPilot</p>
+        <div className="p-4 border-t border-border/50 space-y-3">
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium text-center">PathPilot v1.0</p>
+            <p className="text-xs text-center mt-1">© 2025 PathPilot</p>
+          </div>
+          
+          <div className="text-xs text-muted-foreground bg-secondary/30 rounded-lg p-3">
+            <p className="font-medium text-center mb-2">Created by</p>
+            <p className="font-semibold text-primary text-center">Rithika Nemmaluri</p>
+            
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center gap-2 justify-center">
+                <Phone className="h-3 w-3" />
+                <span className="text-xs">+91 8522943214</span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <Mail className="h-3 w-3" />
+                <span className="text-xs">nemmaluririthika080606@gmail.com</span>
+              </div>
+            </div>
           </div>
         </div>
       </aside>
