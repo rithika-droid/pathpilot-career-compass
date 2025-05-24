@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
 
 interface UserProfile {
   subject: string;
@@ -30,6 +31,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   userProfile: UserProfile | null;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   signup: (email: string, password: string, username: string) => Promise<void>;
@@ -47,19 +49,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('AuthProvider: Setting up auth state listener');
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Use setTimeout to defer database calls
+          console.log('User authenticated, redirecting to dashboard');
+          
+          // Use setTimeout to defer database calls and navigation
           setTimeout(async () => {
             try {
               const { data: profileData } = await supabase
@@ -84,13 +89,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   console.error('Error parsing user data from localStorage', e);
                 }
               }
+
+              // Redirect to dashboard after successful login
+              if (event === 'SIGNED_IN') {
+                navigate('/dashboard');
+              }
+              
             } catch (error) {
               console.error('Error fetching profile:', error);
+            } finally {
+              setLoading(false);
             }
           }, 0);
         } else {
           setProfile(null);
           setUserProfile(null);
+          setLoading(false);
         }
       }
     );
@@ -100,29 +114,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      
+      if (!session) {
+        setLoading(false);
+      }
     });
 
     return () => {
       console.log('AuthProvider: Cleaning up auth listener');
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const login = async (email: string, password: string) => {
     console.log('Attempting login for:', email);
-    const { error } = await supabase.auth.signInWithPassword({
+    setLoading(true);
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
     if (error) {
       console.error('Login error:', error);
+      setLoading(false);
       throw new Error(error.message);
     }
+    
+    console.log('Login successful for:', email);
+    return data;
   };
 
   const loginWithGoogle = async () => {
+    console.log('Attempting Google login');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -131,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     
     if (error) {
+      console.error('Google login error:', error);
       throw new Error(error.message);
     }
   };
@@ -155,8 +180,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     console.log('Logging out user');
-    await supabase.auth.signOut();
-    localStorage.removeItem('pathpilot_user');
+    setLoading(true);
+    
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem('pathpilot_user');
+      
+      // Clear all state
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setUserProfile(null);
+      
+      // Redirect to home page
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateProfile = (profile: UserProfile) => {
@@ -205,6 +247,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     profile,
     userProfile,
+    loading,
     login,
     loginWithGoogle,
     signup,
