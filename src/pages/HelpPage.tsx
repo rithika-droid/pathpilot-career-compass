@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, HelpCircle, MessageSquare, FileQuestion, BookOpen, Phone } from 'lucide-react';
+import { Search, HelpCircle, MessageSquare, FileQuestion, BookOpen, Phone, Mail } from 'lucide-react';
 
 const HelpPage = () => {
   const faqs = [
@@ -24,7 +23,7 @@ const HelpPage = () => {
     },
     {
       question: "How are courses structured in PathPilot?",
-      answer: "Each career path consists of 5 levels, with each level containing multiple courses. Courses include video lectures, reading materials, quizzes, and projects. You need to complete all courses in a level to unlock the next level."
+      answer: "Each career path consists of 5 levels, with each level containing multiple courses. Courses include video lectures, reading materials, quizzes, and projects. You need to complete all requirements for a level to unlock the next level."
     },
     {
       question: "How do I earn certificates?",
@@ -188,8 +187,19 @@ const HelpPage = () => {
                   </div>
                   <div>
                     <h3 className="font-medium">Phone Support</h3>
-                    <p className="text-sm text-muted-foreground mb-1">Call us Mon-Fri, 9am-5pm EST</p>
-                    <p className="font-medium">+1 (555) 123-4567</p>
+                    <p className="text-sm text-muted-foreground mb-1">Call us Mon-Fri, 9am-5pm IST</p>
+                    <p className="font-medium">+91 8522943214</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">Email Support</h3>
+                    <p className="text-sm text-muted-foreground mb-1">Send us an email for detailed help</p>
+                    <p className="font-medium text-sm break-all">nemmaluririthika080606@gmail.com</p>
                   </div>
                 </div>
                 
