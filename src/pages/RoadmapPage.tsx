@@ -171,7 +171,7 @@ const RoadmapPage = () => {
                       <div>
                         <CardTitle className="text-xl">Level {levelNumber}: {level.title}</CardTitle>
                         <CardDescription className="mt-1">
-                          {level.description || `Master the fundamentals of ${level.title.toLowerCase()}`}
+                          Duration: {level.duration || '3-4 months'}
                         </CardDescription>
                       </div>
                     </div>
@@ -186,32 +186,81 @@ const RoadmapPage = () => {
                     <div>
                       <h4 className="font-semibold mb-2 flex items-center gap-2">
                         <BookOpen className="h-4 w-4" />
-                        Skills You'll Learn
+                        Courses & Learning Resources
                       </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {level.skills.map((skill, skillIndex) => (
-                          <Badge key={skillIndex} variant="outline" className="text-xs">
-                            {skill}
-                          </Badge>
+                      <div className="space-y-2">
+                        {level.courses.map((course, courseIndex) => (
+                          <div key={courseIndex} className="flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 bg-primary rounded-full" />
+                            <a 
+                              href={course.link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:text-blue-800 underline"
+                            >
+                              {course.name}
+                            </a>
+                          </div>
                         ))}
                       </div>
                     </div>
                     
+                    {level.projects && level.projects.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold mb-2">Recommended Projects</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {level.projects.map((project, projectIndex) => (
+                            <Badge key={projectIndex} variant="outline" className="text-xs">
+                              {project}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-semibold mb-2 text-sm">Internship Opportunities</h4>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          {level.internships.slice(0, 2).map((internship, internIndex) => (
+                            <li key={internIndex} className="flex items-center gap-2">
+                              <div className="h-1 w-1 bg-primary rounded-full" />
+                              <a 
+                                href={internship} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline"
+                              >
+                                View Opportunities
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h4 className="font-semibold mb-2 text-sm">Job Platforms</h4>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          {level.jobs.slice(0, 2).map((job, jobIndex) => (
+                            <li key={jobIndex} className="flex items-center gap-2">
+                              <div className="h-1 w-1 bg-primary rounded-full" />
+                              <a 
+                                href={job} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline"
+                              >
+                                Explore Jobs
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
                     <div>
-                      <h4 className="font-semibold mb-2">Key Topics</h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        {level.topics.slice(0, 3).map((topic, topicIndex) => (
-                          <li key={topicIndex} className="flex items-center gap-2">
-                            <div className="h-1.5 w-1.5 bg-primary rounded-full" />
-                            {topic}
-                          </li>
-                        ))}
-                        {level.topics.length > 3 && (
-                          <li className="text-xs italic">
-                            +{level.topics.length - 3} more topics
-                          </li>
-                        )}
-                      </ul>
+                      <h4 className="font-semibold mb-2 text-sm">Master's Program Guidance</h4>
+                      <p className="text-xs text-muted-foreground">{level.masters}</p>
                     </div>
 
                     <div className="flex gap-2 pt-2">
