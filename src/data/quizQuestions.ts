@@ -6,143 +6,106 @@ export interface QuizQuestion {
   explanation?: string;
 }
 
-export const quizQuestionsByLevel: { [key: number]: QuizQuestion[] } = {
+export const quizQuestionsByLevel: Record<number, QuizQuestion[]> = {
   1: [
     {
-      question: "Which of the following best describes the use of Git in a development project?",
-      options: [
-        "Writing frontend UI",
-        "Running JavaScript",
-        "Version control and collaboration",
-        "Connecting to databases"
-      ],
+      question: "What is the output of: console.log(typeof null)?",
+      options: ["object", "null", "undefined", "number"],
+      correct: 0,
+      explanation: "In JavaScript, typeof null returns 'object' due to a historical bug that has been kept for compatibility reasons."
+    },
+    {
+      question: "Which HTML tag is used for semantic navigation?",
+      options: ["<div>", "<nav>", "<span>", "<section>"],
+      correct: 1,
+      explanation: "The <nav> tag is specifically designed for navigation links and provides semantic meaning to screen readers and search engines."
+    },
+    {
+      question: "What does 'git stash' do?",
+      options: ["Deletes untracked files", "Saves local changes temporarily", "Commits changes", "Pulls new changes"],
+      correct: 1,
+      explanation: "Git stash temporarily saves your uncommitted changes so you can work on something else, then come back and restore them later."
+    },
+    {
+      question: "Which CSS property is used to make a website responsive?",
+      options: ["position", "display", "media queries", "float"],
       correct: 2,
-      explanation: "Git is a version control system that helps developers track changes and collaborate on code."
+      explanation: "Media queries allow you to apply different CSS styles based on device characteristics like screen width, making websites responsive."
     },
     {
-      question: "You're building a portfolio. What's the best order of learning?",
-      options: [
-        "CSS → HTML → JavaScript",
-        "HTML → CSS → JavaScript",
-        "JavaScript → Git → HTML",
-        "Git → HTML → SQL"
-      ],
+      question: "What is the purpose of semantic HTML?",
+      options: ["Make pages load faster", "Provide meaning to content structure", "Add styling to elements", "Enable JavaScript functionality"],
       correct: 1,
-      explanation: "Start with HTML for structure, then CSS for styling, and finally JavaScript for interactivity."
+      explanation: "Semantic HTML uses elements that clearly describe their meaning in a human and machine-readable way, improving accessibility and SEO."
     },
     {
-      question: "If a website layout breaks when viewed on a phone, what concept are you likely missing?",
-      options: [
-        "Cloud computing",
-        "Responsive design",
-        "Recursion",
-        "Back-end development"
-      ],
+      question: "In JavaScript, what is the difference between 'let' and 'var'?",
+      options: ["No difference", "let has block scope, var has function scope", "var is newer than let", "let is faster than var"],
       correct: 1,
-      explanation: "Responsive design ensures websites work well across different screen sizes and devices."
+      explanation: "'let' has block scope and cannot be redeclared, while 'var' has function scope and can be redeclared, making 'let' safer to use."
     },
     {
-      question: "You completed a course but forgot to save the certificate. What's the best next step?",
-      options: [
-        "Ignore it",
-        "Ask the instructor to email",
-        "Revisit course page and download",
-        "Create a new account"
-      ],
-      correct: 2,
-      explanation: "Most course platforms allow you to revisit and download certificates from your profile or course page."
-    },
-    {
-      question: "Which path best suits someone who enjoys design, color, and user behavior?",
-      options: [
-        "Backend Developer",
-        "Data Scientist",
-        "UI/UX Designer",
-        "System Administrator"
-      ],
-      correct: 2,
-      explanation: "UI/UX Design focuses on visual design, user psychology, and creating intuitive user experiences."
-    },
-    {
-      question: "When debugging a web application, what's the most effective first step?",
-      options: [
-        "Rewrite the entire code",
-        "Check the browser console for errors",
-        "Ask on social media",
-        "Delete and reinstall the browser"
-      ],
+      question: "What is the main advantage of using version control like Git?",
+      options: ["Faster code execution", "Track changes and collaborate", "Automatic bug fixing", "Better UI design"],
       correct: 1,
-      explanation: "Browser console shows JavaScript errors, network issues, and other debugging information."
+      explanation: "Version control systems like Git allow you to track changes over time, collaborate with others, and revert to previous versions when needed."
     },
     {
-      question: "Which skill is most important for a beginner programmer to develop first?",
-      options: [
-        "Advanced algorithms",
-        "Problem-solving and logical thinking",
-        "Learning multiple programming languages",
-        "Memorizing syntax"
-      ],
+      question: "Which principle is most important in UI/UX design?",
+      options: ["Use many colors", "User-centered design", "Complex animations", "Latest trends"],
       correct: 1,
-      explanation: "Problem-solving skills are fundamental and apply to any programming language or technology."
+      explanation: "User-centered design focuses on creating interfaces that meet user needs and provide good user experience, which is the core principle of UI/UX design."
+    },
+    {
+      question: "What should be your first step when building a portfolio website?",
+      options: ["Choose the latest framework", "Plan content and structure", "Add animations", "Pick a color scheme"],
+      correct: 1,
+      explanation: "Planning your content and structure first ensures your portfolio effectively showcases your skills and achievements before focusing on visual design."
+    },
+    {
+      question: "For a beginner, which is the best order to learn web development?",
+      options: ["JavaScript → HTML → CSS", "HTML → CSS → JavaScript", "CSS → JavaScript → HTML", "All at the same time"],
+      correct: 1,
+      explanation: "HTML provides structure, CSS adds styling, and JavaScript adds functionality. Learning in this order builds a solid foundation progressively."
     }
   ],
   2: [
     {
-      question: "In software development, what does 'DRY' principle stand for?",
-      options: [
-        "Do Repeat Yourself",
-        "Don't Repeat Yourself",
-        "Develop Rapid Yields",
-        "Debug Runtime Yearly"
-      ],
+      question: "What is the time complexity of binary search?",
+      options: ["O(n)", "O(log n)", "O(n²)", "O(1)"],
       correct: 1,
-      explanation: "DRY principle encourages writing reusable code to avoid duplication and reduce maintenance."
+      explanation: "Binary search has O(log n) time complexity because it eliminates half of the search space in each iteration."
     },
     {
-      question: "Which database type is best for storing user profiles with varying attributes?",
-      options: [
-        "Relational (SQL)",
-        "NoSQL (Document-based)",
-        "Graph database",
-        "Time-series database"
-      ],
+      question: "Which data structure uses LIFO (Last In, First Out) principle?",
+      options: ["Queue", "Stack", "Array", "Linked List"],
       correct: 1,
-      explanation: "NoSQL document databases like MongoDB are flexible for storing varying user profile structures."
+      explanation: "A stack follows the LIFO principle where the last element added is the first one to be removed."
     },
     {
-      question: "What's the main advantage of using a framework like React over vanilla JavaScript?",
-      options: [
-        "It's faster to execute",
-        "Component reusability and state management",
-        "It requires less code",
-        "It works without internet"
-      ],
+      question: "In object-oriented programming, what is inheritance?",
+      options: ["Creating multiple objects", "A class acquiring properties from another class", "Deleting unused code", "Optimizing performance"],
       correct: 1,
-      explanation: "Frameworks provide structure, reusable components, and better state management for complex applications."
+      explanation: "Inheritance allows a class to inherit properties and methods from another class, promoting code reusability."
     }
   ],
   3: [
     {
-      question: "In a microservices architecture, how should services communicate?",
-      options: [
-        "Direct database access",
-        "Shared memory",
-        "API calls (REST/GraphQL)",
-        "File sharing"
-      ],
-      correct: 2,
-      explanation: "Services should communicate through well-defined APIs to maintain independence and scalability."
+      question: "What is the main purpose of design patterns in software development?",
+      options: ["Make code run faster", "Provide reusable solutions to common problems", "Reduce file size", "Add more features"],
+      correct: 1,
+      explanation: "Design patterns provide tested, proven development paradigms that solve recurring design problems in software development."
     },
     {
-      question: "What's the primary purpose of Docker in development?",
-      options: [
-        "Code version control",
-        "Application containerization",
-        "Database management",
-        "UI design"
-      ],
+      question: "In a microservices architecture, what is the main advantage?",
+      options: ["Easier to debug", "Independent scaling and deployment", "Faster development", "Less code to write"],
       correct: 1,
-      explanation: "Docker containers ensure applications run consistently across different environments."
+      explanation: "Microservices allow each service to be developed, deployed, and scaled independently, improving flexibility and maintainability."
     }
   ]
+};
+
+// Helper function to get questions for a specific level
+export const getQuizQuestions = (level: number): QuizQuestion[] => {
+  return quizQuestionsByLevel[level] || quizQuestionsByLevel[1];
 };
