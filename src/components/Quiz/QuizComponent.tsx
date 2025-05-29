@@ -5,16 +5,11 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Lightbulb } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-
-interface Question {
-  question: string;
-  options: string[];
-  correct: number;
-}
+import { quizQuestionsByLevel, QuizQuestion } from '../../data/quizQuestions';
 
 interface QuizComponentProps {
   careerPath: string;
@@ -23,44 +18,16 @@ interface QuizComponentProps {
 }
 
 const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComplete }) => {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
-  const [currentAnswer, setCurrentAnswer] = useState<string>(''); // Track current question answer
+  const [currentAnswer, setCurrentAnswer] = useState<string>('');
   const [showResults, setShowResults] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
-
-  // Mock questions if Supabase fails
-  const mockQuestions: Question[] = [
-    {
-      question: "What is the primary purpose of HTML?",
-      options: ["Styling web pages", "Adding interactivity", "Structuring web content", "Database management"],
-      correct: 2
-    },
-    {
-      question: "Which CSS property is used to change text color?",
-      options: ["background-color", "color", "text-style", "font-color"],
-      correct: 1
-    },
-    {
-      question: "What does JavaScript primarily add to web pages?",
-      options: ["Structure", "Styling", "Interactivity", "Images"],
-      correct: 2
-    },
-    {
-      question: "Which HTML tag is used for creating links?",
-      options: ["<link>", "<a>", "<href>", "<url>"],
-      correct: 1
-    },
-    {
-      question: "What is the correct way to include CSS in HTML?",
-      options: ["<css>", "<style>", "<stylesheet>", "<design>"],
-      correct: 1
-    }
-  ];
 
   useEffect(() => {
     fetchQuiz();
@@ -69,10 +36,12 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComp
   // Reset current answer when question changes
   useEffect(() => {
     setCurrentAnswer('');
+    setShowExplanation(false);
   }, [currentQuestion]);
 
   const fetchQuiz = async () => {
     try {
+      // Try to get questions from Supabase first
       const { data, error } = await supabase
         .from('quizzes')
         .select('*')
@@ -85,17 +54,19 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComp
       if (data && data.questions) {
         const parsedQuestions = data.questions as unknown;
         if (Array.isArray(parsedQuestions)) {
-          setQuestions(parsedQuestions as Question[]);
+          setQuestions(parsedQuestions as QuizQuestion[]);
         } else {
-          setQuestions(mockQuestions);
+          // Fall back to local questions
+          setQuestions(quizQuestionsByLevel[level] || quizQuestionsByLevel[1]);
         }
       } else {
-        setQuestions(mockQuestions);
+        // Fall back to local questions
+        setQuestions(quizQuestionsByLevel[level] || quizQuestionsByLevel[1]);
       }
     } catch (error) {
       console.error('Error fetching quiz:', error);
-      // Use mock questions as fallback
-      setQuestions(mockQuestions);
+      // Use local questions as fallback
+      setQuestions(quizQuestionsByLevel[level] || quizQuestionsByLevel[1]);
     } finally {
       setLoading(false);
     }
@@ -125,6 +96,10 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComp
     }
   };
 
+  const toggleExplanation = () => {
+    setShowExplanation(!showExplanation);
+  };
+
   const calculateResults = async () => {
     let correctAnswers = 0;
     questions.forEach((question, index) => {
@@ -139,7 +114,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComp
 
     const passed = finalScore >= 70;
 
-    // Save quiz attempt to localStorage as fallback
+    // Save quiz attempt to localStorage for persistence
     const quizAttempts = JSON.parse(localStorage.getItem('pathpilot_quiz_attempts') || '[]');
     const attemptData = {
       careerPath,
@@ -176,6 +151,18 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComp
     }
 
     onComplete(finalScore, passed);
+    
+    if (passed) {
+      toast({
+        title: "🎉 Quiz Passed!",
+        description: `Great job! You scored ${finalScore}% on the Level ${level} quiz.`,
+      });
+    } else {
+      toast({
+        title: "Quiz Results",
+        description: `You scored ${finalScore}%. You need 70% to pass this level.`,
+      });
+    }
   };
 
   if (loading) {
@@ -224,6 +211,54 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComp
             <div className="text-sm text-muted-foreground">
               You got {questions.filter((q, i) => selectedAnswers[i] === q.correct).length} out of {questions.length} questions correct.
             </div>
+            
+            <div className="mt-6">
+              <h3 className="font-semibold mb-3">Question Summary:</h3>
+              <div className="space-y-3">
+                {questions.map((question, index) => {
+                  const isCorrect = selectedAnswers[index] === question.correct;
+                  return (
+                    <div 
+                      key={index} 
+                      className={`p-3 rounded-md ${
+                        isCorrect ? 'bg-green-50 dark:bg-green-950/20' : 'bg-red-50 dark:bg-red-950/20'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        {isCorrect ? (
+                          <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
+                        )}
+                        <div>
+                          <p className="font-medium text-sm">{question.question}</p>
+                          <p className="text-sm mt-1">
+                            <span className="font-medium">Your answer:</span> {question.options[selectedAnswers[index]]}
+                          </p>
+                          {!isCorrect && (
+                            <p className="text-sm text-green-700 dark:text-green-300">
+                              <span className="font-medium">Correct answer:</span> {question.options[question.correct]}
+                            </p>
+                          )}
+                          {question.explanation && (
+                            <p className="text-xs text-muted-foreground mt-1 italic">{question.explanation}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <Button onClick={() => {
+              setShowResults(false);
+              setCurrentQuestion(0);
+              setSelectedAnswers([]);
+              setCurrentAnswer('');
+            }} className="mt-4">
+              Retry Quiz
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -251,7 +286,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComp
             onValueChange={handleAnswerSelect}
           >
             {currentQ.options.map((option, index) => (
-              <div key={index} className="flex items-center space-x-2">
+              <div key={index} className="flex items-center space-x-2 p-2 rounded-md hover:bg-secondary/50 transition-colors">
                 <RadioGroupItem value={index.toString()} id={`option-${index}`} />
                 <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
                   {option}
@@ -261,14 +296,37 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ careerPath, level, onComp
           </RadioGroup>
         </div>
 
-        <div className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentQuestion === 0}
-          >
-            Previous
-          </Button>
+        {showExplanation && currentQ.explanation && (
+          <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md">
+            <div className="flex gap-2">
+              <Lightbulb className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-700 dark:text-blue-300">{currentQ.explanation}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentQuestion === 0}
+            >
+              Previous
+            </Button>
+            
+            {currentQ.explanation && (
+              <Button 
+                variant="outline"
+                onClick={toggleExplanation}
+                className="text-blue-500 border-blue-200 hover:bg-blue-50"
+              >
+                <Lightbulb className="h-4 w-4 mr-1" />
+                {showExplanation ? "Hide Hint" : "Show Hint"}
+              </Button>
+            )}
+          </div>
+          
           <Button
             onClick={handleNext}
             disabled={currentAnswer === ''}

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Award, BookOpen, Code, Lightbulb, Target, Trophy, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface RoadmapStep {
   id: string;
@@ -27,6 +28,7 @@ const RoadmapPage = () => {
   const { userProfile, updateProfile } = useAuth();
   const [roadmapSteps, setRoadmapSteps] = useState<RoadmapStep[]>([]);
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Load completed steps from localStorage
@@ -245,6 +247,25 @@ const RoadmapPage = () => {
     .filter(step => completedSteps.has(step.id))
     .reduce((sum, step) => sum + step.points, 0);
 
+  const handleLevelClick = (level: number) => {
+    if (level === 1) {
+      navigate('/level1-courses');
+    } else {
+      toast({
+        title: "Level Locked",
+        description: `Level ${level} courses are coming soon!`,
+      });
+    }
+  };
+
+  const handleStartStep = (stepId: string) => {
+    if (stepId === 'intro-programming') {
+      navigate('/level1-courses');
+    } else {
+      completeStep(stepId);
+    }
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -288,6 +309,52 @@ const RoadmapPage = () => {
               </div>
             </CardContent>
           </Card>
+          
+          {/* Level Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {[1, 2, 3].map((level) => {
+              const isUnlocked = level === 1 || (userProfile?.level && userProfile.level >= level);
+              
+              return (
+                <Card 
+                  key={level}
+                  className={`cursor-pointer transition-all hover:shadow-md ${
+                    isUnlocked 
+                      ? level === 1 ? 'border-primary/50' : ''
+                      : 'opacity-70'
+                  }`}
+                  onClick={() => handleLevelClick(level)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          isUnlocked ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {level}
+                        </div>
+                        <h3 className="font-semibold">Level {level}</h3>
+                      </div>
+                      {!isUnlocked && (
+                        <Badge variant="outline">Locked</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {level === 1 ? 'Foundation Courses' : 
+                       level === 2 ? 'Intermediate Skills' : 'Advanced Topics'}
+                    </p>
+                    <Button 
+                      variant={isUnlocked ? "default" : "outline"}
+                      className="w-full"
+                      onClick={() => handleLevelClick(level)}
+                    >
+                      {isUnlocked ? 'View Courses' : 'Coming Soon'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
 
         {/* Roadmap Steps */}
@@ -351,7 +418,7 @@ const RoadmapPage = () => {
                   
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => completeStep(step.id)}
+                      onClick={() => handleStartStep(step.id)}
                       disabled={step.locked || step.completed}
                       className="flex-1"
                       variant={step.completed ? "outline" : "default"}

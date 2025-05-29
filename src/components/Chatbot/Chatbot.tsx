@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +11,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
+import { findBestResponse } from '@/data/chatbotData';
 
 interface Message {
   id: string;
@@ -38,15 +39,7 @@ const Chatbot = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Sample responses for demo
-  const sampleResponses = [
-    "Based on your interest in AI and machine learning, I recommend exploring the Data Scientist or ML Engineer path. These careers have excellent growth prospects and allow you to work on cutting-edge technology.",
-    "For someone studying Computer Science, I'd suggest looking into these areas: Software Engineering, Data Science, Cybersecurity, or AI/ML. Each has different skill requirements and salary potential.",
-    "To become a successful full-stack developer, focus on learning: HTML/CSS/JavaScript, a frontend framework like React, backend development with Node.js or Python, and database management. I can help you find resources for each.",
-    "The difference between Data Science and AI/ML is that Data Science focuses on extracting insights from data, while AI/ML is about creating systems that can learn and make decisions. Both are related but require slightly different skill sets.",
-    "For internship preparation, I recommend: 1) Build a strong portfolio on GitHub, 2) Practice coding interviews on platforms like LeetCode, 3) Customize your resume for each application, and 4) Research the company before interviews."
-  ];
+  const { userProfile } = useAuth();
 
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
@@ -72,19 +65,42 @@ const Chatbot = () => {
     setInputValue('');
     setIsTyping(true);
     
-    // Simulate bot typing
+    // Generate personalized response
     setTimeout(() => {
-      // Add bot response
+      // Get response from the improved chatbot data
+      let response = findBestResponse(inputValue);
+      
+      // Personalize with user data if available
+      if (userProfile) {
+        // Insert user's level or career path info if available
+        if (userProfile.level) {
+          response = response.replace('your current level', `Level ${userProfile.level}`);
+        }
+        
+        if (userProfile.careerPath) {
+          response = response.replace('based on your interests', 
+            `based on your interest in ${userProfile.careerPath}`);
+        }
+      }
+      
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: sampleResponses[Math.floor(Math.random() * sampleResponses.length)],
+        text: response,
         sender: 'bot',
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
-    }, 1500);
+      
+      // Save chat history to localStorage
+      const savedMessages = [...messages, userMessage, botMessage];
+      if (savedMessages.length > 20) {
+        // Keep only the last 20 messages to prevent localStorage from growing too large
+        savedMessages.splice(0, savedMessages.length - 20);
+      }
+      localStorage.setItem('pathpilot_chat_history', JSON.stringify(savedMessages));
+    }, 1200);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -104,6 +120,26 @@ const Chatbot = () => {
       inputRef.current?.focus();
     }
   }, [isOpen, isMinimized]);
+  
+  // Load chat history from localStorage
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('pathpilot_chat_history');
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+          // Convert string timestamps back to Date objects
+          const processedMessages = parsedMessages.map(msg => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }));
+          setMessages(processedMessages);
+        }
+      } catch (e) {
+        console.error('Error parsing chat history:', e);
+      }
+    }
+  }, []);
 
   return (
     <>
@@ -130,7 +166,7 @@ const Chatbot = () => {
         <div className="flex items-center justify-between p-3 border-b border-border rounded-t-lg bg-primary/10">
           <div className="flex items-center space-x-2">
             <Avatar className="h-8 w-8 bg-primary">
-              <AvatarImage src="/placeholder.svg" />
+              <AvatarImage src="/placeholder.svg" alt="PathPilot Assistant" />
               <AvatarFallback className="bg-primary text-primary-foreground">PP</AvatarFallback>
             </Avatar>
             <div>
@@ -224,6 +260,9 @@ const Chatbot = () => {
                 >
                   <Send className="h-4 w-4" />
                 </Button>
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                <p>Try asking: "What courses should I take?" or "How do I become a UI/UX designer?"</p>
               </div>
             </div>
           </div>

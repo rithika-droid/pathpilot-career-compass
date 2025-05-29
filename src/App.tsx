@@ -15,6 +15,7 @@ import HelpPage from "./pages/HelpPage";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import ProfileSetupForm from "./components/ProfileSetup/ProfileSetupForm";
 import Dashboard from "./components/Dashboard/Dashboard";
+import Level1CoursesPage from "./pages/Level1CoursesPage";
 import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,12 @@ const App = () => (
               <Route path="/roadmap" element={
                 <ProtectedRoute>
                   <RoadmapPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/level1-courses" element={
+                <ProtectedRoute>
+                  <Level1CoursesPage />
                 </ProtectedRoute>
               } />
               
