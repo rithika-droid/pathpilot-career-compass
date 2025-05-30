@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { CheckCircle, ExternalLink, Award, ArrowLeft, BookOpen, Code, Briefcase 
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import QuizComponent from '../components/Quiz/QuizComponent';
+import ProjectGuide from '../components/ProjectGuide/ProjectGuide';
 
 interface Course {
   id: string;
@@ -37,6 +37,7 @@ const Level1CoursesPage = () => {
   const [completedCourses, setCompletedCourses] = useState<Set<string>>(new Set());
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [showProjectGuide, setShowProjectGuide] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const courses: Course[] = [
@@ -222,6 +223,26 @@ const Level1CoursesPage = () => {
     }
   };
 
+  const handleProjectGuideClick = (projectId: string) => {
+    setShowProjectGuide(projectId);
+  };
+
+  const handleBackFromGuide = () => {
+    setShowProjectGuide(null);
+  };
+
+  // If showing project guide, render it instead of the main content
+  if (showProjectGuide) {
+    return (
+      <MainLayout>
+        <ProjectGuide 
+          projectId={showProjectGuide} 
+          onBack={handleBackFromGuide}
+        />
+      </MainLayout>
+    );
+  }
+
   const progressPercentage = (completedCourses.size / courses.length) * 100;
 
   return (
@@ -405,14 +426,18 @@ const Level1CoursesPage = () => {
                   <CardDescription>{project.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {project.technologies.map((tech) => (
                       <Badge key={tech} variant="outline" className="text-xs">
                         {tech}
                       </Badge>
                     ))}
                   </div>
-                  <Button className="w-full mt-4" variant="outline">
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => handleProjectGuideClick(project.id)}
+                  >
                     <BookOpen className="h-4 w-4 mr-2" />
                     View Project Guide
                   </Button>
