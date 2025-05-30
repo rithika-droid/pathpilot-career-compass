@@ -1,36 +1,32 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, CheckCircle, Code, ExternalLink, FileText, Globe, Monitor, Settings, Zap } from 'lucide-react';
-
 interface ProjectGuideProps {
   projectId: string;
   onBack: () => void;
 }
-
 interface GuideSection {
   title: string;
   icon: React.ReactNode;
   content: React.ReactNode;
 }
-
-const ProjectGuide: React.FC<ProjectGuideProps> = ({ projectId, onBack }) => {
+const ProjectGuide: React.FC<ProjectGuideProps> = ({
+  projectId,
+  onBack
+}) => {
   const [currentSection, setCurrentSection] = useState(0);
-
   const getProjectGuide = (id: string): GuideSection[] => {
     switch (id) {
       case 'portfolio-website':
-        return [
-          {
-            title: "Introduction & Overview",
-            icon: <FileText className="h-5 w-5" />,
-            content: (
-              <div className="space-y-4">
+        return [{
+          title: "Introduction & Overview",
+          icon: <FileText className="h-5 w-5" />,
+          content: <div className="space-y-4">
                 <p className="text-lg">Build a professional portfolio website to showcase your skills, projects, and achievements.</p>
-                <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+                <div className="p-4 rounded-lg bg-transparent">
                   <h4 className="font-semibold mb-2">🎯 Project Goals:</h4>
                   <ul className="list-disc list-inside space-y-1">
                     <li>Create a responsive personal portfolio</li>
@@ -39,7 +35,7 @@ const ProjectGuide: React.FC<ProjectGuideProps> = ({ projectId, onBack }) => {
                     <li>Build something you can use professionally</li>
                   </ul>
                 </div>
-                <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+                <div className="p-4 rounded-lg bg-transparent">
                   <h4 className="font-semibold mb-2">💻 Technologies Used:</h4>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">HTML5</Badge>
@@ -50,13 +46,10 @@ const ProjectGuide: React.FC<ProjectGuideProps> = ({ projectId, onBack }) => {
                   <p className="mt-2 text-sm">These technologies provide a solid foundation for modern web development and are essential skills for any developer.</p>
                 </div>
               </div>
-            )
-          },
-          {
-            title: "Prerequisites & Setup",
-            icon: <Settings className="h-5 w-5" />,
-            content: (
-              <div className="space-y-4">
+        }, {
+          title: "Prerequisites & Setup",
+          icon: <Settings className="h-5 w-5" />,
+          content: <div className="space-y-4">
                 <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">📋 Prerequisites:</h4>
                   <ul className="list-disc list-inside space-y-1">
@@ -82,13 +75,10 @@ const ProjectGuide: React.FC<ProjectGuideProps> = ({ projectId, onBack }) => {
                   </ol>
                 </div>
               </div>
-            )
-          },
-          {
-            title: "Step-by-Step Instructions",
-            icon: <Code className="h-5 w-5" />,
-            content: (
-              <div className="space-y-6">
+        }, {
+          title: "Step-by-Step Instructions",
+          icon: <Code className="h-5 w-5" />,
+          content: <div className="space-y-6">
                 <div className="border-l-4 border-blue-500 pl-4">
                   <h4 className="font-semibold mb-2">Step 1: HTML Structure</h4>
                   <p className="mb-2">Create the basic HTML structure in index.html:</p>
@@ -333,13 +323,10 @@ document.addEventListener('DOMContentLoaded', function() {
                   </div>
                 </div>
               </div>
-            )
-          },
-          {
-            title: "Key Functionalities & Features",
-            icon: <Zap className="h-5 w-5" />,
-            content: (
-              <div className="space-y-4">
+        }, {
+          title: "Key Functionalities & Features",
+          icon: <Zap className="h-5 w-5" />,
+          content: <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
                     <h4 className="font-semibold mb-2">🎨 Responsive Design</h4>
@@ -378,13 +365,10 @@ document.addEventListener('DOMContentLoaded', function() {
                   </ul>
                 </div>
               </div>
-            )
-          },
-          {
-            title: "Testing & Troubleshooting",
-            icon: <Monitor className="h-5 w-5" />,
-            content: (
-              <div className="space-y-4">
+        }, {
+          title: "Testing & Troubleshooting",
+          icon: <Monitor className="h-5 w-5" />,
+          content: <div className="space-y-4">
                 <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">✅ Testing Checklist:</h4>
                   <ul className="list-disc list-inside space-y-1">
@@ -413,13 +397,10 @@ document.addEventListener('DOMContentLoaded', function() {
                   </div>
                 </div>
               </div>
-            )
-          },
-          {
-            title: "Finalization & Deployment",
-            icon: <Globe className="h-5 w-5" />,
-            content: (
-              <div className="space-y-4">
+        }, {
+          title: "Finalization & Deployment",
+          icon: <Globe className="h-5 w-5" />,
+          content: <div className="space-y-4">
                 <div className="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">🚀 Deployment Options:</h4>
                   <div className="space-y-3">
@@ -462,17 +443,12 @@ document.addEventListener('DOMContentLoaded', function() {
                   </Button>
                 </div>
               </div>
-            )
-          }
-        ];
-
+        }];
       case 'todo-app':
-        return [
-          {
-            title: "Introduction & Overview",
-            icon: <FileText className="h-5 w-5" />,
-            content: (
-              <div className="space-y-4">
+        return [{
+          title: "Introduction & Overview",
+          icon: <FileText className="h-5 w-5" />,
+          content: <div className="space-y-4">
                 <p className="text-lg">Build a fully functional to-do application with local storage persistence.</p>
                 <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">🎯 Project Goals:</h4>
@@ -493,13 +469,10 @@ document.addEventListener('DOMContentLoaded', function() {
                   </div>
                 </div>
               </div>
-            )
-          },
-          {
-            title: "Prerequisites & Setup",
-            icon: <Settings className="h-5 w-5" />,
-            content: (
-              <div className="space-y-4">
+        }, {
+          title: "Prerequisites & Setup",
+          icon: <Settings className="h-5 w-5" />,
+          content: <div className="space-y-4">
                 <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">📋 Prerequisites:</h4>
                   <ul className="list-disc list-inside space-y-1">
@@ -523,18 +496,14 @@ document.addEventListener('DOMContentLoaded', function() {
                   </ol>
                 </div>
               </div>
-            )
-          },
-          // Add more sections for todo-app...
+        }
+        // Add more sections for todo-app...
         ];
-
       case 'quiz-app':
-        return [
-          {
-            title: "Introduction & Overview",
-            icon: <FileText className="h-5 w-5" />,
-            content: (
-              <div className="space-y-4">
+        return [{
+          title: "Introduction & Overview",
+          icon: <FileText className="h-5 w-5" />,
+          content: <div className="space-y-4">
                 <p className="text-lg">Create an interactive quiz application with scoring and feedback.</p>
                 <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">🎯 Project Goals:</h4>
@@ -546,18 +515,14 @@ document.addEventListener('DOMContentLoaded', function() {
                   </ul>
                 </div>
               </div>
-            )
-          },
-          // Add more sections...
+        }
+        // Add more sections...
         ];
-
       case 'blog-github':
-        return [
-          {
-            title: "Introduction & Overview",
-            icon: <FileText className="h-5 w-5" />,
-            content: (
-              <div className="space-y-4">
+        return [{
+          title: "Introduction & Overview",
+          icon: <FileText className="h-5 w-5" />,
+          content: <div className="space-y-4">
                 <p className="text-lg">Create and deploy a personal blog using GitHub Pages and Markdown.</p>
                 <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">🎯 Project Goals:</h4>
@@ -569,11 +534,9 @@ document.addEventListener('DOMContentLoaded', function() {
                   </ul>
                 </div>
               </div>
-            )
-          },
-          // Add more sections...
+        }
+        // Add more sections...
         ];
-
       default:
         return [{
           title: "Project Guide Not Found",
@@ -582,7 +545,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }];
     }
   };
-
   const sections = getProjectGuide(projectId);
   const projectTitles: Record<string, string> = {
     'portfolio-website': 'Portfolio Website using HTML, CSS & JS',
@@ -590,9 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
     'quiz-app': 'Quiz App using JavaScript',
     'blog-github': 'Personal Blog using GitHub Pages'
   };
-
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+  return <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6">
         <Button variant="ghost" onClick={onBack} className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -611,28 +571,19 @@ document.addEventListener('DOMContentLoaded', function() {
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
-          />
+          <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{
+          width: `${(currentSection + 1) / sections.length * 100}%`
+        }} />
         </div>
       </div>
 
       {/* Section Navigation */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">
-        {sections.map((section, index) => (
-          <Button
-            key={index}
-            variant={currentSection === index ? "default" : "outline"}
-            size="sm"
-            onClick={() => setCurrentSection(index)}
-            className="flex items-center gap-1 text-xs"
-          >
+        {sections.map((section, index) => <Button key={index} variant={currentSection === index ? "default" : "outline"} size="sm" onClick={() => setCurrentSection(index)} className="flex items-center gap-1 text-xs">
             {currentSection > index && <CheckCircle className="h-3 w-3" />}
             {section.icon}
             <span className="hidden md:inline">{section.title.split(' ')[0]}</span>
-          </Button>
-        ))}
+          </Button>)}
       </div>
 
       {/* Current Section Content */}
@@ -650,23 +601,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
       {/* Navigation Buttons */}
       <div className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={() => setCurrentSection(Math.max(0, currentSection - 1))}
-          disabled={currentSection === 0}
-        >
+        <Button variant="outline" onClick={() => setCurrentSection(Math.max(0, currentSection - 1))} disabled={currentSection === 0}>
           Previous
         </Button>
-        <Button
-          onClick={() => setCurrentSection(Math.min(sections.length - 1, currentSection + 1))}
-          disabled={currentSection === sections.length - 1}
-        >
+        <Button onClick={() => setCurrentSection(Math.min(sections.length - 1, currentSection + 1))} disabled={currentSection === sections.length - 1}>
           Next
         </Button>
       </div>
 
-      {currentSection === sections.length - 1 && (
-        <Card className="mt-6 bg-green-50 dark:bg-green-950/20 border-green-500">
+      {currentSection === sections.length - 1 && <Card className="mt-6 bg-green-50 dark:bg-green-950/20 border-green-500">
           <CardContent className="pt-6 text-center">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">🎉 Project Complete!</h3>
@@ -677,10 +620,7 @@ document.addEventListener('DOMContentLoaded', function() {
               View More Projects
             </Button>
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+        </Card>}
+    </div>;
 };
-
 export default ProjectGuide;
