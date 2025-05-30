@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
           icon: <Zap className="h-5 w-5" />,
           content: <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+                  <div className="p-4 rounded-lg bg-inherit">
                     <h4 className="font-semibold mb-2">🎨 Responsive Design</h4>
                     <p className="text-sm">Use CSS media queries to ensure your portfolio looks great on all devices.</p>
                     <div className="mt-2">
@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
                       <Badge variant="outline" className="text-xs ml-1">Flexbox</Badge>
                     </div>
                   </div>
-                  <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+                  <div className="p-4 rounded-lg bg-transparent">
                     <h4 className="font-semibold mb-2">⚡ Smooth Scrolling</h4>
                     <p className="text-sm">Implement smooth navigation between sections for better user experience.</p>
                     <div className="mt-2">
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <li>Include your best projects and skills</li>
                   </ul>
                 </div>
-                <div className="bg-red-50 dark:bg-red-950/20 p-4 rounded-lg">
+                <div className="p-4 rounded-lg bg-transparent">
                   <h4 className="font-semibold mb-2">⚠️ Common Pitfalls to Avoid:</h4>
                   <ul className="list-disc list-inside space-y-1 text-sm">
                     <li>Don't overload with too many animations</li>
