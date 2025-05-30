@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,41 +29,41 @@ const ProjectGuide: React.FC<ProjectGuideProps> = ({
           title: "Introduction & Overview",
           icon: <FileText className="h-5 w-5" />,
           content: <div className="space-y-4">
-                <p className="text-lg">Build a professional portfolio website to showcase your skills, projects, and achievements.</p>
-                <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">🎯 Project Goals:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-blue-800 dark:text-blue-200">
+                <p className="text-lg text-gray-900 dark:text-gray-100">Build a professional portfolio website to showcase your skills, projects, and achievements.</p>
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🎯 Project Goals:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800 dark:text-gray-200">
                     <li>Create a responsive personal portfolio</li>
                     <li>Showcase your projects and skills</li>
                     <li>Learn modern web development practices</li>
                     <li>Build something you can use professionally</li>
                   </ul>
                 </div>
-                <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
-                  <h4 className="font-semibold mb-2 text-green-900 dark:text-green-100">💻 Technologies Used:</h4>
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">💻 Technologies Used:</h4>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">HTML5</Badge>
                     <Badge variant="outline">CSS3</Badge>
                     <Badge variant="outline">JavaScript</Badge>
                     <Badge variant="outline">Responsive Design</Badge>
                   </div>
-                  <p className="mt-2 text-sm text-green-800 dark:text-green-200">These technologies provide a solid foundation for modern web development and are essential skills for any developer.</p>
+                  <p className="mt-2 text-sm text-gray-800 dark:text-gray-200">These technologies provide a solid foundation for modern web development and are essential skills for any developer.</p>
                 </div>
               </div>
         }, {
           title: "Prerequisites & Setup",
           icon: <Settings className="h-5 w-5" />,
           content: <div className="space-y-4">
-                <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800">
-                  <h4 className="font-semibold mb-2 text-yellow-900 dark:text-yellow-100">📋 Prerequisites:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-yellow-800 dark:text-yellow-200">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">📋 Prerequisites:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800 dark:text-gray-200">
                     <li>Basic understanding of HTML, CSS, and JavaScript</li>
                     <li>Text editor (VS Code recommended)</li>
                     <li>Web browser for testing</li>
                     <li>Basic knowledge of file management</li>
                   </ul>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
                   <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🛠️ Setup Instructions:</h4>
                   <ol className="list-decimal list-inside space-y-2 text-gray-800 dark:text-gray-200">
                     <li>Create a new folder called "my-portfolio"</li>
@@ -84,9 +83,9 @@ const ProjectGuide: React.FC<ProjectGuideProps> = ({
           title: "Step-by-Step Instructions",
           icon: <Code className="h-5 w-5" />,
           content: <div className="space-y-6">
-                <div className="border-l-4 border-blue-500 pl-4 bg-blue-50 dark:bg-blue-950/30 p-4 rounded-r-lg">
-                  <h4 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">Step 1: HTML Structure</h4>
-                  <p className="mb-2 text-blue-800 dark:text-blue-200">Create the basic HTML structure in index.html:</p>
+                <div className="border-l-4 border-blue-500 pl-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-r-lg border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">Step 1: HTML Structure</h4>
+                  <p className="mb-2 text-gray-800 dark:text-gray-200">Create the basic HTML structure in index.html:</p>
                   <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
                     <pre>{`<!DOCTYPE html>
 <html lang="en">
@@ -151,9 +150,9 @@ const ProjectGuide: React.FC<ProjectGuideProps> = ({
                   </div>
                 </div>
 
-                <div className="border-l-4 border-green-500 pl-4 bg-green-50 dark:bg-green-950/30 p-4 rounded-r-lg">
-                  <h4 className="font-semibold mb-2 text-green-900 dark:text-green-100">Step 2: CSS Styling</h4>
-                  <p className="mb-2 text-green-800 dark:text-green-200">Add responsive styling in styles.css:</p>
+                <div className="border-l-4 border-green-500 pl-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-r-lg border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">Step 2: CSS Styling</h4>
+                  <p className="mb-2 text-gray-800 dark:text-gray-200">Add responsive styling in styles.css:</p>
                   <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
                     <pre>{`/* Reset and Base Styles */
 * {
@@ -282,9 +281,9 @@ h2 {
                   </div>
                 </div>
 
-                <div className="border-l-4 border-purple-500 pl-4 bg-purple-50 dark:bg-purple-950/30 p-4 rounded-r-lg">
-                  <h4 className="font-semibold mb-2 text-purple-900 dark:text-purple-100">Step 3: JavaScript Functionality</h4>
-                  <p className="mb-2 text-purple-800 dark:text-purple-200">Add interactive features in script.js:</p>
+                <div className="border-l-4 border-purple-500 pl-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-r-lg border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">Step 3: JavaScript Functionality</h4>
+                  <p className="mb-2 text-gray-800 dark:text-gray-200">Add interactive features in script.js:</p>
                   <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
                     <pre>{`// Smooth scrolling for navigation links
 document.addEventListener('DOMContentLoaded', function() {
@@ -333,26 +332,26 @@ document.addEventListener('DOMContentLoaded', function() {
           icon: <Zap className="h-5 w-5" />,
           content: <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                    <h4 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">🎨 Responsive Design</h4>
-                    <p className="text-sm text-blue-800 dark:text-blue-200">Use CSS media queries to ensure your portfolio looks great on all devices.</p>
+                  <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                    <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🎨 Responsive Design</h4>
+                    <p className="text-sm text-gray-800 dark:text-gray-200">Use CSS media queries to ensure your portfolio looks great on all devices.</p>
                     <div className="mt-2">
                       <Badge variant="outline" className="text-xs">Mobile-First</Badge>
                       <Badge variant="outline" className="text-xs ml-1">Flexbox</Badge>
                     </div>
                   </div>
-                  <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
-                    <h4 className="font-semibold mb-2 text-green-900 dark:text-green-100">⚡ Smooth Scrolling</h4>
-                    <p className="text-sm text-green-800 dark:text-green-200">Implement smooth navigation between sections for better user experience.</p>
+                  <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                    <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">⚡ Smooth Scrolling</h4>
+                    <p className="text-sm text-gray-800 dark:text-gray-200">Implement smooth navigation between sections for better user experience.</p>
                     <div className="mt-2">
                       <Badge variant="outline" className="text-xs">JavaScript</Badge>
                       <Badge variant="outline" className="text-xs ml-1">UX</Badge>
                     </div>
                   </div>
                 </div>
-                <div className="bg-yellow-50 dark:bg-yellow-950/30 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                  <h4 className="font-semibold mb-2 text-yellow-900 dark:text-yellow-100">💡 Best Practices:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-yellow-800 dark:text-yellow-200">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">💡 Best Practices:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-800 dark:text-gray-200">
                     <li>Use semantic HTML elements for better accessibility</li>
                     <li>Optimize images for web (compress and use appropriate formats)</li>
                     <li>Test on multiple devices and browsers</li>
@@ -360,9 +359,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <li>Include your best projects and skills</li>
                   </ul>
                 </div>
-                <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-                  <h4 className="font-semibold mb-2 text-red-900 dark:text-red-100">⚠️ Common Pitfalls to Avoid:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-red-800 dark:text-red-200">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">⚠️ Common Pitfalls to Avoid:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-800 dark:text-gray-200">
                     <li>Don't overload with too many animations</li>
                     <li>Avoid using too many different fonts</li>
                     <li>Don't forget to test mobile responsiveness</li>
@@ -374,9 +373,9 @@ document.addEventListener('DOMContentLoaded', function() {
           title: "Testing & Troubleshooting",
           icon: <Monitor className="h-5 w-5" />,
           content: <div className="space-y-4">
-                <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                  <h4 className="font-semibold mb-2 text-green-900 dark:text-green-100">✅ Testing Checklist:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-green-800 dark:text-green-200">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">✅ Testing Checklist:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800 dark:text-gray-200">
                     <li>Open index.html in your browser</li>
                     <li>Test navigation links work properly</li>
                     <li>Verify responsive design on different screen sizes</li>
@@ -384,9 +383,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <li>Test smooth scrolling functionality</li>
                   </ul>
                 </div>
-                <div className="bg-orange-50 dark:bg-orange-950/30 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
-                  <h4 className="font-semibold mb-2 text-orange-900 dark:text-orange-100">🔧 Troubleshooting Common Issues:</h4>
-                  <div className="space-y-3 text-orange-800 dark:text-orange-200">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🔧 Troubleshooting Common Issues:</h4>
+                  <div className="space-y-3 text-gray-800 dark:text-gray-200">
                     <div>
                       <p className="font-medium">CSS not loading:</p>
                       <p className="text-sm">Check the file path in your HTML link tag</p>
@@ -406,9 +405,9 @@ document.addEventListener('DOMContentLoaded', function() {
           title: "Finalization & Deployment",
           icon: <Globe className="h-5 w-5" />,
           content: <div className="space-y-4">
-                <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-                  <h4 className="font-semibold mb-2 text-purple-900 dark:text-purple-100">🚀 Deployment Options:</h4>
-                  <div className="space-y-3 text-purple-800 dark:text-purple-200">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🚀 Deployment Options:</h4>
+                  <div className="space-y-3 text-gray-800 dark:text-gray-200">
                     <div>
                       <p className="font-medium">GitHub Pages (Free):</p>
                       <ol className="list-decimal list-inside text-sm ml-4">
@@ -427,9 +426,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">🎯 Enhancement Ideas:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-blue-800 dark:text-blue-200">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🎯 Enhancement Ideas:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-800 dark:text-gray-200">
                     <li>Add a contact form with form validation</li>
                     <li>Include a blog section</li>
                     <li>Add animations and transitions</li>
@@ -454,18 +453,18 @@ document.addEventListener('DOMContentLoaded', function() {
           title: "Introduction & Overview",
           icon: <FileText className="h-5 w-5" />,
           content: <div className="space-y-4">
-                <p className="text-lg">Build a fully functional to-do application with local storage persistence.</p>
-                <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">🎯 Project Goals:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-blue-800 dark:text-blue-200">
+                <p className="text-lg text-gray-900 dark:text-gray-100">Build a fully functional to-do application with local storage persistence.</p>
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🎯 Project Goals:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800 dark:text-gray-200">
                     <li>Create a task management application</li>
                     <li>Learn local storage and data persistence</li>
                     <li>Implement CRUD operations</li>
                     <li>Build a responsive user interface</li>
                   </ul>
                 </div>
-                <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                  <h4 className="font-semibold mb-2 text-green-900 dark:text-green-100">💻 Technologies Used:</h4>
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">💻 Technologies Used:</h4>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">HTML5</Badge>
                     <Badge variant="outline">CSS3</Badge>
@@ -478,16 +477,16 @@ document.addEventListener('DOMContentLoaded', function() {
           title: "Prerequisites & Setup",
           icon: <Settings className="h-5 w-5" />,
           content: <div className="space-y-4">
-                <div className="bg-yellow-50 dark:bg-yellow-950/30 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                  <h4 className="font-semibold mb-2 text-yellow-900 dark:text-yellow-100">📋 Prerequisites:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-yellow-800 dark:text-yellow-200">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">📋 Prerequisites:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800 dark:text-gray-200">
                     <li>Understanding of JavaScript arrays and objects</li>
                     <li>Knowledge of DOM manipulation</li>
                     <li>Basic CSS styling skills</li>
                     <li>Familiarity with event handling</li>
                   </ul>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
                   <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🛠️ Setup Instructions:</h4>
                   <ol className="list-decimal list-inside space-y-2 text-gray-800 dark:text-gray-200">
                     <li>Create a new folder called "todo-app"</li>
@@ -509,10 +508,10 @@ document.addEventListener('DOMContentLoaded', function() {
           title: "Introduction & Overview",
           icon: <FileText className="h-5 w-5" />,
           content: <div className="space-y-4">
-                <p className="text-lg">Create an interactive quiz application with scoring and feedback.</p>
-                <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">🎯 Project Goals:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-blue-800 dark:text-blue-200">
+                <p className="text-lg text-gray-900 dark:text-gray-100">Create an interactive quiz application with scoring and feedback.</p>
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🎯 Project Goals:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800 dark:text-gray-200">
                     <li>Build an interactive quiz interface</li>
                     <li>Implement scoring system</li>
                     <li>Create dynamic question display</li>
@@ -528,10 +527,10 @@ document.addEventListener('DOMContentLoaded', function() {
           title: "Introduction & Overview",
           icon: <FileText className="h-5 w-5" />,
           content: <div className="space-y-4">
-                <p className="text-lg">Create and deploy a personal blog using GitHub Pages and Markdown.</p>
-                <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold mb-2 text-blue-900 dark:text-blue-100">🎯 Project Goals:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-blue-800 dark:text-blue-200">
+                <p className="text-lg text-gray-900 dark:text-gray-100">Create and deploy a personal blog using GitHub Pages and Markdown.</p>
+                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">🎯 Project Goals:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-gray-800 dark:text-gray-200">
                     <li>Learn Git and GitHub workflow</li>
                     <li>Master Markdown syntax</li>
                     <li>Deploy a live website</li>
@@ -546,8 +545,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return [{
           title: "Project Guide Not Found",
           icon: <FileText className="h-5 w-5" />,
-          content: <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800">
-                  <p className="text-yellow-800 dark:text-yellow-200">This guide is under construction. Please check back later.</p>
+          content: <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600">
+                  <p className="text-gray-800 dark:text-gray-200">This guide is under construction. Please check back later.</p>
                 </div>
         }];
     }
