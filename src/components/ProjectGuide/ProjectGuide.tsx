@@ -50,7 +50,7 @@ const ProjectGuide: React.FC<ProjectGuideProps> = ({
           title: "Prerequisites & Setup",
           icon: <Settings className="h-5 w-5" />,
           content: <div className="space-y-4">
-                <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg">
+                <div className="p-4 rounded-lg bg-transparent">
                   <h4 className="font-semibold mb-2">📋 Prerequisites:</h4>
                   <ul className="list-disc list-inside space-y-1">
                     <li>Basic understanding of HTML, CSS, and JavaScript</li>
